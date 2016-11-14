@@ -1,0 +1,17 @@
+*~
+\#*
+*bak
+*.pdf
+*.png
+*.stl
+*.eep
+*.elf
+*.hex
+*.lss
+*.map
+*.sym
+*.net
+.dep
+obj_*_lufa
+plot_files/
+*autosave*
