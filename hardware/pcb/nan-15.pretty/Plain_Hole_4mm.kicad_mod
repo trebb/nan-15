@@ -1,0 +1,11 @@
+(module nan-15:Plain_Hole_4mm (layer F.Cu) (tedit 5828A8E2)
+  (descr "Mounting Hole 4mm, no annular")
+  (tags "mounting hole 4mm no annular")
+  (fp_text reference HS3 (at 0 -5) (layer F.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value HEATSINK (at 0 5) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (pad 1 np_thru_hole circle (at 0 0) (size 4 4) (drill 4) (layers *.Cu *.Mask F.SilkS))
+)
