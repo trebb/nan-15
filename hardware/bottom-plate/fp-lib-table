@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name nan-15)(type KiCad)(uri "$(KIPRJMOD)/nan-15.pretty")(options "")(descr ""))
+)
