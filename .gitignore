@@ -1,6 +1,7 @@
 *~
 \#*
 *bak
+*.bck
 *.pdf
 *.png
 *.stl
@@ -12,7 +13,7 @@
 *.sym
 *.net
 .dep
-*_rescue.lib
+*-rescue.lib
 obj_*_lufa
 plot_files/
 *autosave*
