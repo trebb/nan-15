@@ -12,6 +12,7 @@
 *.sym
 *.net
 .dep
+*_rescue.lib
 obj_*_lufa
 plot_files/
 *autosave*
