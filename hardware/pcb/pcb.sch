@@ -37,7 +37,7 @@ encoding utf-8
 Sheet 1 1
 Title "NaN-15"
 Date ""
-Rev "0.1"
+Rev "0.2"
 Comp ""
 Comment1 ""
 Comment2 ""
@@ -72,7 +72,7 @@ U 1 1 58276973
 P 2600 1850
 F 0 "C1" H 2715 1896 50  0000 L CNN
 F 1 "1u" H 2715 1805 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 2638 1700 50  0001 C CNN
+F 2 "Capacitors_SMD:C_1206" H 2638 1700 50  0001 C CNN
 F 3 "" H 2600 1850 50  0000 C CNN
 	1    2600 1850
 	1    0    0    -1  
@@ -83,7 +83,7 @@ U 1 1 582769C1
 P 4350 4500
 F 0 "C6" V 4550 4450 50  0000 L CNN
 F 1 "1u" V 4465 4455 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 4388 4350 50  0001 C CNN
+F 2 "Capacitors_SMD:C_1206" H 4388 4350 50  0001 C CNN
 F 3 "" H 4350 4500 50  0000 C CNN
 	1    4350 4500
 	0    -1   -1   0   
@@ -94,7 +94,7 @@ U 1 1 58276A04
 P 3950 4100
 F 0 "C5" H 4065 4146 50  0000 L CNN
 F 1 "18p" H 4065 4055 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 3988 3950 50  0001 C CNN
+F 2 "Capacitors_SMD:C_1206" H 3988 3950 50  0001 C CNN
 F 3 "" H 3950 4100 50  0000 C CNN
 	1    3950 4100
 	1    0    0    -1  
@@ -105,18 +105,18 @@ U 1 1 58276A6A
 P 3450 4100
 F 0 "C4" H 3200 4150 50  0000 L CNN
 F 1 "18p" H 3200 4050 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 3488 3950 50  0001 C CNN
+F 2 "Capacitors_SMD:C_1206" H 3488 3950 50  0001 C CNN
 F 3 "" H 3450 4100 50  0000 C CNN
 	1    3450 4100
 	1    0    0    -1  
 $EndComp
 $Comp
-L Crystal_Small Y1
+L CRYSTAL_SMD Y1
 U 1 1 58276AB3
 P 3700 3900
 F 0 "Y1" H 3700 4100 50  0000 C CNN
-F 1 "HC49S" H 3700 4034 50  0000 C CNN
-F 2 "Crystals:Crystal_HC49-U_Vertical" H 3700 3900 50  0001 C CNN
+F 1 "MT 16MHz" H 3700 4034 50  0000 C CNN
+F 2 "nan-15:crystal_MT_32x25" H 3700 3900 50  0001 C CNN
 F 3 "" H 3700 3900 50  0000 C CNN
 	1    3700 3900
 	1    0    0    -1  
@@ -237,7 +237,7 @@ U 1 1 582771BB
 P 2950 4800
 F 0 "R3" V 2950 4800 50  0000 C CNN
 F 1 "22" V 2900 4950 50  0000 C CNN
-F 2 "Resistors_SMD:R_1206_HandSoldering" H 2950 4800 50  0001 C CNN
+F 2 "Resistors_SMD:R_1206" H 2950 4800 50  0001 C CNN
 F 3 "" H 2950 4800 50  0000 C CNN
 	1    2950 4800
 	0    1    1    0   
@@ -248,7 +248,7 @@ U 1 1 582772C4
 P 2950 4700
 F 0 "R2" V 2950 4700 50  0000 C CNN
 F 1 "22" V 2900 4850 50  0000 C CNN
-F 2 "Resistors_SMD:R_1206_HandSoldering" H 2950 4700 50  0001 C CNN
+F 2 "Resistors_SMD:R_1206" H 2950 4700 50  0001 C CNN
 F 3 "" H 2950 4700 50  0000 C CNN
 	1    2950 4700
 	0    1    1    0   
@@ -281,7 +281,7 @@ U 1 1 5827761F
 P 3300 3200
 F 0 "R1" H 3359 3246 50  0000 L CNN
 F 1 "10k" H 3359 3155 50  0000 L CNN
-F 2 "Resistors_SMD:R_1206_HandSoldering" H 3300 3200 50  0001 C CNN
+F 2 "Resistors_SMD:R_1206" H 3300 3200 50  0001 C CNN
 F 3 "" H 3300 3200 50  0000 C CNN
 	1    3300 3200
 	1    0    0    -1  
@@ -325,7 +325,7 @@ U 1 1 58277754
 P 3100 1850
 F 0 "C2" H 3215 1896 50  0000 L CNN
 F 1 "100n" H 3215 1805 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 3138 1700 50  0001 C CNN
+F 2 "Capacitors_SMD:C_1206" H 3138 1700 50  0001 C CNN
 F 3 "" H 3100 1850 50  0000 C CNN
 	1    3100 1850
 	1    0    0    -1  
@@ -358,7 +358,7 @@ U 1 1 58277794
 P 3550 1850
 F 0 "C3" H 3665 1896 50  0000 L CNN
 F 1 "100n" H 3665 1805 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 3588 1700 50  0001 C CNN
+F 2 "Capacitors_SMD:C_1206" H 3588 1700 50  0001 C CNN
 F 3 "" H 3550 1850 50  0000 C CNN
 	1    3550 1850
 	1    0    0    -1  
@@ -391,7 +391,7 @@ U 1 1 582777CF
 P 7100 4800
 F 0 "R4" V 7100 4800 50  0000 C CNN
 F 1 "10k" V 7050 4950 50  0000 C CNN
-F 2 "Resistors_SMD:R_1206_HandSoldering" H 7100 4800 50  0001 C CNN
+F 2 "Resistors_SMD:R_1206" H 7100 4800 50  0001 C CNN
 F 3 "" H 7100 4800 50  0000 C CNN
 	1    7100 4800
 	0    1    1    0   
@@ -674,7 +674,7 @@ U 1 1 5828553C
 P 9400 8350
 F 0 "W0" V 9400 8538 50  0000 L CNN
 F 1 "TEST_1P" V 9445 8538 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8350 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8350 50  0001 C CNN
 F 3 "" H 9600 8350 50  0000 C CNN
 	1    9400 8350
 	0    1    1    0   
@@ -685,7 +685,7 @@ U 1 1 58285778
 P 9400 8450
 F 0 "W1" V 9400 8638 50  0000 L CNN
 F 1 "TEST_1P" V 9445 8638 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8450 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8450 50  0001 C CNN
 F 3 "" H 9600 8450 50  0000 C CNN
 	1    9400 8450
 	0    1    1    0   
@@ -696,7 +696,7 @@ U 1 1 582857F9
 P 9400 8550
 F 0 "W2" V 9400 8738 50  0000 L CNN
 F 1 "TEST_1P" V 9445 8738 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8550 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8550 50  0001 C CNN
 F 3 "" H 9600 8550 50  0000 C CNN
 	1    9400 8550
 	0    1    1    0   
@@ -707,7 +707,7 @@ U 1 1 58285800
 P 9400 8650
 F 0 "W3" V 9400 8838 50  0000 L CNN
 F 1 "TEST_1P" V 9445 8838 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8650 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8650 50  0001 C CNN
 F 3 "" H 9600 8650 50  0000 C CNN
 	1    9400 8650
 	0    1    1    0   
@@ -718,7 +718,7 @@ U 1 1 58285939
 P 9400 8750
 F 0 "W4" V 9400 8938 50  0000 L CNN
 F 1 "TEST_1P" V 9445 8938 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8750 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8750 50  0001 C CNN
 F 3 "" H 9600 8750 50  0000 C CNN
 	1    9400 8750
 	0    1    1    0   
@@ -729,7 +729,7 @@ U 1 1 58285940
 P 9400 8850
 F 0 "W5" V 9400 9038 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9038 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8850 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8850 50  0001 C CNN
 F 3 "" H 9600 8850 50  0000 C CNN
 	1    9400 8850
 	0    1    1    0   
@@ -740,7 +740,7 @@ U 1 1 58285947
 P 9400 8950
 F 0 "W6" V 9400 9138 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9138 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 8950 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 8950 50  0001 C CNN
 F 3 "" H 9600 8950 50  0000 C CNN
 	1    9400 8950
 	0    1    1    0   
@@ -751,7 +751,7 @@ U 1 1 5828594E
 P 9400 9050
 F 0 "W7" V 9400 9238 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9238 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 9050 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 9050 50  0001 C CNN
 F 3 "" H 9600 9050 50  0000 C CNN
 	1    9400 9050
 	0    1    1    0   
@@ -762,7 +762,7 @@ U 1 1 582859FF
 P 9400 9150
 F 0 "W8" V 9400 9338 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9338 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 9150 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 9150 50  0001 C CNN
 F 3 "" H 9600 9150 50  0000 C CNN
 	1    9400 9150
 	0    1    1    0   
@@ -773,7 +773,7 @@ U 1 1 58285A06
 P 9400 9250
 F 0 "W9" V 9400 9438 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9438 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 9250 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 9250 50  0001 C CNN
 F 3 "" H 9600 9250 50  0000 C CNN
 	1    9400 9250
 	0    1    1    0   
@@ -784,7 +784,7 @@ U 1 1 58285A0D
 P 9400 9350
 F 0 "W10" V 9400 9537 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9538 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 9350 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 9350 50  0001 C CNN
 F 3 "" H 9600 9350 50  0000 C CNN
 	1    9400 9350
 	0    1    1    0   
@@ -795,7 +795,7 @@ U 1 1 58285A14
 P 9400 9450
 F 0 "W11" V 9400 9637 50  0000 L CNN
 F 1 "TEST_1P" V 9445 9638 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 9600 9450 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 9600 9450 50  0001 C CNN
 F 3 "" H 9600 9450 50  0000 C CNN
 	1    9400 9450
 	0    1    1    0   
@@ -830,7 +830,7 @@ U 1 1 5828657C
 P 6700 8350
 F 0 "W50" V 6700 8537 50  0000 L CNN
 F 1 "TEST_1P" V 6745 8538 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 6900 8350 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 6900 8350 50  0001 C CNN
 F 3 "" H 6900 8350 50  0000 C CNN
 	1    6700 8350
 	0    1    1    0   
@@ -852,7 +852,7 @@ U 1 1 5828667D
 P 6700 8650
 F 0 "W51" V 6700 8837 50  0000 L CNN
 F 1 "TEST_1P" V 6745 8838 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 6900 8650 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 6900 8650 50  0001 C CNN
 F 3 "" H 6900 8650 50  0000 C CNN
 	1    6700 8650
 	0    1    1    0   
@@ -874,7 +874,7 @@ U 1 1 58286728
 P 6700 8950
 F 0 "W52" V 6700 9137 50  0000 L CNN
 F 1 "TEST_1P" V 6745 9138 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 6900 8950 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 6900 8950 50  0001 C CNN
 F 3 "" H 6900 8950 50  0000 C CNN
 	1    6700 8950
 	0    1    1    0   
@@ -896,7 +896,7 @@ U 1 1 58286735
 P 6700 9250
 F 0 "W53" V 6700 9437 50  0000 L CNN
 F 1 "TEST_1P" V 6745 9438 50  0001 L CNN
-F 2 "nan-15:SolderWirePad_single_1-2mmDrill_no_legend" H 6900 9250 50  0001 C CNN
+F 2 "nan-15:SolderWirePad_2mm_1-2mmDrill_no_legend" H 6900 9250 50  0001 C CNN
 F 3 "" H 6900 9250 50  0000 C CNN
 	1    6700 9250
 	0    1    1    0   
@@ -1321,4 +1321,19 @@ F 3 "" V 2500 4600 50  0000 C CNN
 	1    2550 4700
 	0    -1   -1   0   
 $EndComp
+$Comp
+L GND #PWR028
+U 1 1 583F1710
+P 3700 4000
+F 0 "#PWR028" H 3700 3750 50  0001 C CNN
+F 1 "GND" H 3705 3827 50  0000 C CNN
+F 2 "" H 3700 4000 50  0000 C CNN
+F 3 "" H 3700 4000 50  0000 C CNN
+	1    3700 4000
+	1    0    0    -1  
+$EndComp
+Text Label 3650 4700 0    60   ~ 0
+D+
+Text Label 3650 4800 0    60   ~ 0
+D-
 $EndSCHEMATC
