@@ -155,16 +155,19 @@ difference() {
           }
         }
       }
-
-
     }
     translate([0, 0, 0]) {
       linear_extrude(height = h_mid) {
         import(file = "frame.dxf", layer = "plate-support");
       }
     }
-  }
-  color("cyan") {
+    translate([0, 0, 0]) {
+      linear_extrude(height = h_mid - 1) {
+        import(file = "frame.dxf", layer = "bottom-support");
+      }
+    }
+  } /* union */
+  color("cyan", $fa = 5, $fs = 0.2) {
     translate([x0_cable, y0_cable, 0]) {
       rotate([-90, 0, 0]) {
         rotate_extrude() {
