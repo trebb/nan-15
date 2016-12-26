@@ -202,8 +202,8 @@ select_col(uint8_t col)
             PORTD &= ~(1<<2);
             break;
         case 0x3:
-            DDRB  |=  (1<<1);
-            PORTB &= ~(1<<1);
+            DDRD  |=  (1<<1);
+            PORTD &= ~(1<<1);
             break;
     }
 }

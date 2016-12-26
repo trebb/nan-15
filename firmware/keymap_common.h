@@ -44,12 +44,12 @@ extern const uint16_t fn_actions[];
     K00, K01, K02, K03, \
     K10, K11, K12, K13, \
     K20, K21, K22, K23, \
-    K30,      K32, K33, \
+    K30,      K32, K33 \
     ) { \
     { KC_##K00, KC_##K01, KC_##K02, KC_##K03, }, \
     { KC_##K10, KC_##K11, KC_##K12, KC_##K13, }, \
     { KC_##K20, KC_##K21, KC_##K22, KC_##K23, }, \
-    { KC_##K30,           KC_##K32, KC_##K33, } \
+    { KC_##K30, KC_NO,    KC_##K32, KC_##K33 }  \
 }
 
 #endif
