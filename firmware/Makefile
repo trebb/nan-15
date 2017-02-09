@@ -43,6 +43,7 @@ TARGET = nan-15_lufa
 
 # Directory common source filess exist
 TMK_DIR = tmk_keyboard/tmk_core
+# TMK_DIR = ../../iso50/firmware/tmk_keyboard/tmk_core
 
 # Directory keyboard dependent files exist
 TARGET_DIR = .
@@ -60,10 +61,11 @@ endif
 
 CONFIG_H = config.h
 
+PROGRAM_CMD = avrdude -p $(MCU) -c usbasp -U flash:w:$(TARGET).hex
 
 # MCU name
 #MCU = at90usb1287
-MCU = atmega32u4
+MCU = atmega32u2
 
 # Processor frequency.
 #     This will define a symbol, F_CPU, in all source code files equal to the
@@ -111,13 +113,38 @@ OPT_DEFS += -DINTERRUPT_CONTROL_ENDPOINT
 OPT_DEFS += -DBOOTLOADER_SIZE=4096
 
 
+BOARD = NONE
+FLASH_SIZE_KB = 32
+BOOT_SECTION_SIZE_KB = 4
+export ARCH F_USB F_CPU MCU BOARD FLASH_SIZE_KB BOOT_SECTION_SIZE_KB
+
+bootloaders-help:
+	$(MAKE) -C tmk_keyboard/tmk_core/protocol/lufa/LUFA-git/Bootloaders help
+
+bootloaders:
+	$(MAKE) -e -C tmk_keyboard/tmk_core/protocol/lufa/LUFA-git/Bootloaders
+
+
+bootloader-dfu: bootloaders
+	avrdude -c usbasp -pm32u2 -U flash:w:tmk_keyboard/tmk_core/protocol/lufa/LUFA-git/Bootloaders/DFU/BootloaderDFU.hex
+
+bootloader-mass-storage: bootloaders
+	avrdude -c usbasp -pm32u2 -U flash:w:tmk_keyboard/tmk_core/protocol/lufa/LUFA-git/Bootloaders/MassStorage/BootloaderMassStorage.hex
+
+
+bootloaders-clean:
+	$(MAKE) -C tmk_keyboard/tmk_core/protocol/lufa/LUFA-git/Bootloaders clean
+
+fuses:
+	avrdude -c usbasp -pm32u2 -U lfuse:w:0xff:m -U hfuse:w:0xd9:m -U efuse:w:0xf4:m 
+
 # Build Options
 #   comment out to disable the options.
 #
 #BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration(+1000)
-MOUSEKEY_ENABLE = yes	# Mouse keys(+4700)
-EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
-CONSOLE_ENABLE = yes	# Console for debug(+400)
+# MOUSEKEY_ENABLE = yes	# Mouse keys(+4700)
+# EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
+# CONSOLE_ENABLE = yes	# Console for debug(+400)
 #COMMAND_ENABLE = yes    # Commands for debug and configuration
 #SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
 #NKRO_ENABLE = yes	# USB Nkey Rollover - not yet supported in LUFA
@@ -132,4 +159,4 @@ VPATH += $(TMK_DIR)
 
 include $(TMK_DIR)/protocol/lufa.mk
 include $(TMK_DIR)/common.mk
-include $(TMK_DIR)/rules.mk
+include rules.mk

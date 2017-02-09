@@ -43,11 +43,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *  These options are also useful to firmware size reduction.
  */
 
-/* disable debug print */
-#define NO_DEBUG
+/* enable debug print */
+#undef NO_DEBUG
 
-/* disable print */
-#define NO_PRINT
+/* enable print */
+#undef NO_PRINT
 
 /* disable action features */
 //#define NO_ACTION_LAYER
