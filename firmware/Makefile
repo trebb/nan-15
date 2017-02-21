@@ -38,8 +38,10 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
+KEYMAP ?= nan-15_test
+
 # Target file name (without extension).
-TARGET = nan-15_lufa
+TARGET = $(KEYMAP)_lufa
 
 # Directory common source filess exist
 TMK_DIR = tmk_keyboard/tmk_core
@@ -53,11 +55,7 @@ SRC =	keymap_common.c \
 	matrix.c \
 	led.c
 
-ifdef KEYMAP
-    SRC := keymap_$(KEYMAP).c $(SRC)
-else
-    SRC := keymap_nan-15.c $(SRC)
-endif
+SRC := keymap_$(KEYMAP).c $(SRC)
 
 CONFIG_H = config.h
 
@@ -144,7 +142,7 @@ fuses:
 #BOOTMAGIC_ENABLE = yes	# Virtual DIP switch configuration(+1000)
 # MOUSEKEY_ENABLE = yes	# Mouse keys(+4700)
 # EXTRAKEY_ENABLE = yes	# Audio control and System control(+450)
-# CONSOLE_ENABLE = yes	# Console for debug(+400)
+CONSOLE_ENABLE = yes	# Console for debug(+400)
 #COMMAND_ENABLE = yes    # Commands for debug and configuration
 #SLEEP_LED_ENABLE = yes  # Breathing sleep LED during USB suspend
 #NKRO_ENABLE = yes	# USB Nkey Rollover - not yet supported in LUFA
