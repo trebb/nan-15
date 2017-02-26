@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <util/delay.h>
 #include "print.h"
 #include "debug.h"
-#include "util.h"
 #include "matrix.h"
 
 
@@ -62,6 +61,7 @@ matrix_init(void)
     unselect_cols();
     init_rows();
 
+    debug_enable = true;
     // initialize matrix state: all keys off
     for (uint8_t i=0; i < MATRIX_ROWS; i++) {
         matrix[i] = 0;

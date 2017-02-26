@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* (Thanks to http://pid.codes) */
 #define DEVICE_VER 0x0001
 #define MANUFACTURER trebb
-#define PRODUCT NaN-15
+#define PRODUCT NaN-15.test
 #define DESCRIPTION TMK keyboard firmware for NaN-15
 
 /* key matrix size */
@@ -46,14 +46,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* enable debug print */
 #undef NO_DEBUG
 
+#define DEBUG_ACTION
+
 /* enable print */
 #undef NO_PRINT
 
 /* disable action features */
-//#define NO_ACTION_LAYER
-//#define NO_ACTION_TAPPING
+/* #define NO_ACTION_LAYER */
+#define NO_ACTION_TAPPING
 #define NO_ACTION_ONESHOT
-//#define NO_ACTION_MACRO
-//#define NO_ACTION_FUNCTION
+#define NO_ACTION_MACRO
+#define NO_ACTION_FUNCTION
 
 #endif

@@ -51,8 +51,7 @@ TMK_DIR = tmk_keyboard/tmk_core
 TARGET_DIR = .
 
 # project specific files
-SRC =	keymap_common.c \
-	matrix.c \
+SRC =	matrix.c \
 	led.c
 
 SRC := keymap_$(KEYMAP).c $(SRC)
@@ -157,4 +156,4 @@ VPATH += $(TMK_DIR)
 
 include $(TMK_DIR)/protocol/lufa.mk
 include $(TMK_DIR)/common.mk
-include rules.mk
+include $(TMK_DIR)/rules.mk
