@@ -25,15 +25,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* (Thanks to http://pid.codes) */
 #define DEVICE_VER 0x0001
 #define MANUFACTURER trebb
-#define PRODUCT NaN-15.test
+#define PRODUCT NaN-15
 #define DESCRIPTION TMK keyboard firmware for NaN-15
 
 /* key matrix size */
 #define MATRIX_ROWS 4
 #define MATRIX_COLS 4
-
-/* define if matrix has ghost */
-//#define MATRIX_HAS_GHOST
 
 /* Set 0 if debouncing isn't needed */
 #define DEBOUNCE 5
@@ -56,6 +53,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define NO_ACTION_TAPPING
 #define NO_ACTION_ONESHOT
 #define NO_ACTION_MACRO
-#define NO_ACTION_FUNCTION
+/* #define NO_ACTION_FUNCTION */
 
 #endif

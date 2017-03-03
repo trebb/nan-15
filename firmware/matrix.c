@@ -18,14 +18,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*
  * scan matrix
  */
-#include <stdint.h>
-#include <stdbool.h>
-#include <avr/io.h>
-#include <util/delay.h>
-#include "print.h"
+
 #include "debug.h"
 #include "matrix.h"
-
+#include <util/delay.h>
 
 #ifndef DEBOUNCE
 #   define DEBOUNCE	5

@@ -1,8 +1,19 @@
-Building firmware .hex file:
+Building firmware .hex and .eep files:
 
-$ make program
+$ make KEYMAP=test all
+  or
+$ make KEYMAP=chord all
+
+
+Upload bootloader and set fuses (attach USBasp programmer):
+
+$ make bootloader-dfu
+$ make fuses
 
 
 Upload firmware to keyboard (press reset button):
 
-$ make dfu
+$ make KEYMAP=test dfu
+  or
+$ make KEYMAP=chord dfu
+$ make KEYMAP=chord dfu-ee

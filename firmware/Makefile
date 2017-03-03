@@ -38,23 +38,21 @@
 # To rebuild project do "make clean" then "make all".
 #----------------------------------------------------------------------------
 
-KEYMAP ?= nan-15_test
+KEYMAP ?= test
 
 # Target file name (without extension).
-TARGET = $(KEYMAP)_lufa
+TARGET = nan-15_$(KEYMAP)_lufa
 
 # Directory common source filess exist
 TMK_DIR = tmk_keyboard/tmk_core
-# TMK_DIR = ../../iso50/firmware/tmk_keyboard/tmk_core
 
 # Directory keyboard dependent files exist
 TARGET_DIR = .
 
 # project specific files
-SRC =	matrix.c \
-	led.c
+SRC =	matrix.c
 
-SRC := keymap_$(KEYMAP).c $(SRC)
+SRC := nan-15_$(KEYMAP).c $(SRC)
 
 CONFIG_H = config.h
 
