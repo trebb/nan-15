@@ -17,83 +17,222 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "actionmap.h"
 #include "debug.h"
+#include "host.h"
 #include "led.h"
+#include "timer.h"
 #include <avr/eeprom.h>
 
 
 #ifdef BOOTMAGIC_ENABLE
 extern keymap_config_t keymap_config;
 #endif
-#ifndef NO_ACTION_TAPPING
-#error We use the action kind ACT_MODS_TAP to distinguish thumb chords, \
-    so please #define NO_ACTION_TAPPING
-#endif
 #define ACT_THUMB_CHORD ACT_MODS_TAP
 
-/* NaN-15 raw actionmap definition
+typedef struct {
+    uint16_t on;
+    uint16_t off;
+    uint16_t last;
+    uint8_t cycles;
+} blink_t;
+
+static blink_t leds[12] = {{0}};
+
+enum led_cmd {OFF = 0, ON = 1, TOGGLE, STATE};
+#define LED_ON(port, bit) {(DDR##port) |= (1<<(bit)); (PORT##port) |= (1<<(bit));} while (0)
+#define LED_OFF(port, bit) {(DDR##port) |= (1<<(bit)); (PORT##port) &= ~(1<<(bit));} while (0)
+#define LED_TOGGLE(port, bit) {(DDR##port) |= (1<<(bit)); (PORT##port) ^= (1<<(bit));} while (0)
+#define LED_STATE(port, bit) ((PORT##port) & (1<<(bit)))
+
+/* 
+ * Set or return state of an LED
+ */
+static bool
+led(uint8_t led, uint8_t cmd)
+{
+    switch (cmd) {
+    case ON:
+        switch (led) {
+        case 0: LED_ON(D, 0); break;
+        case 1: LED_ON(D, 4); break;
+        case 2: LED_ON(D, 5); break;
+        case 3: LED_ON(D, 6); break;
+        case 4: LED_ON(B, 0); break;
+        case 5: LED_ON(B, 1); break;
+        case 6: LED_ON(B, 4); break;
+        case 7: LED_ON(B, 5); break;
+        case 8: LED_ON(B, 6); break;
+        case 9: LED_ON(B, 7); break;
+        case 10: LED_ON(C, 5); break;
+        case 11: LED_ON(C, 6); break;
+        } break;
+    case OFF:
+        switch (led) {
+        case 0: LED_OFF(D, 0); break;
+        case 1: LED_OFF(D, 4); break;
+        case 2: LED_OFF(D, 5); break;
+        case 3: LED_OFF(D, 6); break;
+        case 4: LED_OFF(B, 0); break;
+        case 5: LED_OFF(B, 1); break;
+        case 6: LED_OFF(B, 4); break;
+        case 7: LED_OFF(B, 5); break;
+        case 8: LED_OFF(B, 6); break;
+        case 9: LED_OFF(B, 7); break;
+        case 10: LED_OFF(C, 5); break;
+        case 11: LED_OFF(C, 6); break;
+        } break;
+    case TOGGLE:
+        switch (led) {
+        case 0: LED_TOGGLE(D, 0); break;
+        case 1: LED_TOGGLE(D, 4); break;
+        case 2: LED_TOGGLE(D, 5); break;
+        case 3: LED_TOGGLE(D, 6); break;
+        case 4: LED_TOGGLE(B, 0); break;
+        case 5: LED_TOGGLE(B, 1); break;
+        case 6: LED_TOGGLE(B, 4); break;
+        case 7: LED_TOGGLE(B, 5); break;
+        case 8: LED_TOGGLE(B, 6); break;
+        case 9: LED_TOGGLE(B, 7); break;
+        case 10: LED_TOGGLE(C, 5); break;
+        case 11: LED_TOGGLE(C, 6); break;
+        } break;
+    case STATE:
+        switch (led) {
+        case 0: return LED_STATE(D, 0); break;
+        case 1: return LED_STATE(D, 4); break;
+        case 2: return LED_STATE(D, 5); break;
+        case 3: return LED_STATE(D, 6); break;
+        case 4: return LED_STATE(B, 0); break;
+        case 5: return LED_STATE(B, 1); break;
+        case 6: return LED_STATE(B, 4); break;
+        case 7: return LED_STATE(B, 5); break;
+        case 8: return LED_STATE(B, 6); break;
+        case 9: return LED_STATE(B, 7); break;
+        case 10: return LED_STATE(C, 5); break;
+        case 11: return LED_STATE(C, 6); break;
+        } break;
+    }
+    return false;
+}
+    
+
+void
+led_set(uint8_t usb_led)
+{
+    led(5, usb_led & (1<<USB_LED_CAPS_LOCK) ? ON : OFF);
+    led(6, usb_led & (1<<USB_LED_NUM_LOCK) ? ON : OFF);
+    led(7, usb_led & (1<<USB_LED_SCROLL_LOCK) ? ON : OFF);
+}
+
+void
+hook_matrix_change(keyevent_t event)
+{
+     if (event.pressed){
+         led(8, TOGGLE);
+         leds[0].last = timer_read();
+    }
+}
+
+static void
+blink(void)
+{
+    int8_t i;
+    
+    for (i = 0; i <= 11; i++) {
+        if (led(i, STATE)) {
+            /* do nothing if leds[i].on == 0 and leds[i].off == 0 */
+            if (leds[i].on && timer_elapsed(leds[i].last) > leds[i].on) {
+                led(i, OFF);
+                leds[i].last = timer_read();
+            }
+        } else {
+            if (leds[i].off && timer_elapsed(leds[i].last) > leds[i].off && leds[i].cycles > 0) {
+                led(i, ON);
+                leds[i].last = timer_read();
+                leds[i].cycles--;
+            }
+        }
+                
+    }
+            
+}
+
+void
+hook_early_init(void)
+{
+    led(8, ON);
+}
+
+void
+hook_late_init(void)
+{
+    led(8, OFF);
+    leds[1].on = 1000;
+    leds[1].off = 300;
+    leds[1].cycles = 4;
+    leds[2].on = 100;
+    leds[2].off = 300;
+    leds[2].cycles = 20;
+    leds[3] = (blink_t){.on = 100, .off = 300, .cycles = 20,};
+}
+
+void
+hook_keyboard_loop(void)
+{
+    blink();
+}
+
+/*  NaN-15 raw actionmap and LED definition
  *
- * ,-----------------------.
- * | 1,0 | 1,1 | 1,2 | 1,3 |
- * |-----+-----+-----+-----|
- * | 2,0 | 2,1 | 2,2 | 2,3 |
- * |-----+-----+-----+-----|
- * | 3,0 | 3,1 | 3,2 | 3,3 |
- * |-----+-----+-----+-----|
- * | 4,0 |    4,1    | 4,2 |
- * `-----------------------'
+ * ,-------------------------------------------.
+ * |          |        LED5         |          |
+ * |          |          |          |          |
+ * |   1,3    |   1,2  LED6  1,1    |   1,0    |
+ * |          |          |          |          |
+ * |          |        LED7         |          |
+ * |LED9------+----------+----------+----- LED4|
+ * |          |          |          |          |
+ * |          |          |          |          |
+ * |   2,3    |   2,2    |   2,1    |   2,0    |
+ * |          |          |          |          |
+ * |          |          |          |          |
+ * |LED12-----+--------LED8---------+------LED3|
+ * |          |          |          |          |
+ * |          |          |          |          |
+ * |   3,3    |   3,2    |   3,1    |   3,0    |
+ * |          |          |          |          |
+ * |          |          |          |          |
+ * |LED11-----+---------------------+------LED2|
+ * |          |                     |          |
+ * |   4,2    |         4,1         |   4,0    |
+ * |          |                     |          |
+ * |        LED0                  LED1         |
+ * `-------------------------------------------'
  */
 
 #define POSFUNC(row, col) ACTION_FUNCTION_OPT(col, row)
 #define THUMB_ROW 4
 
-const action_t PROGMEM actionmaps[][MATRIX_ROWS][MATRIX_COLS] = {
+const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
     [0] = {
-        { POSFUNC(1, 0), POSFUNC(1, 1), POSFUNC(1, 2), POSFUNC(1, 3), },
-        { POSFUNC(2, 0), POSFUNC(2, 1), POSFUNC(2, 2), POSFUNC(2, 3), },
-        { POSFUNC(3, 0), POSFUNC(3, 1), POSFUNC(3, 2), POSFUNC(3, 3), },
-        { POSFUNC(4, 0), ACTION_NO,     POSFUNC(4, 1), POSFUNC(4, 2), },
+        { POSFUNC(1, 3), POSFUNC(1, 2), POSFUNC(1, 1), POSFUNC(1, 0), },
+        { POSFUNC(2, 3), POSFUNC(2, 2), POSFUNC(2, 1), POSFUNC(2, 0), },
+        { POSFUNC(3, 3), POSFUNC(3, 2), POSFUNC(3, 1), POSFUNC(3, 0), },
+        { POSFUNC(4, 2), ACTION_NO,     POSFUNC(4, 1), POSFUNC(4, 0), },
     }
 };
 
-
-/* /\* translates chord to action *\/ */
-/* static action_t chord_to_action(uint8_t chord) */
-/* { */
-/*     switch (chord) { */
-/*         case KC_A ... KC_EXSEL: */
-/*         case KC_LCTRL ... KC_RGUI: */
-/*             return (action_t)ACTION_KEY(keycode); */
-/*             break; */
-/*         case KC_SYSTEM_POWER ... KC_SYSTEM_WAKE: */
-/*             return (action_t)ACTION_USAGE_SYSTEM(KEYCODE2SYSTEM(keycode)); */
-/*             break; */
-/*         case KC_AUDIO_MUTE ... KC_WWW_FAVORITES: */
-/*             return (action_t)ACTION_USAGE_CONSUMER(KEYCODE2CONSUMER(keycode)); */
-/*             break; */
-/*         case KC_MS_UP ... KC_MS_ACCEL2: */
-/*             return (action_t)ACTION_MOUSEKEY(keycode); */
-/*             break; */
-/*         case KC_TRNS: */
-/*             return (action_t)ACTION_TRANSPARENT; */
-/*             break; */
-/*         case KC_BOOTLOADER: */
-/*             clear_keyboard(); */
-/*             wait_ms(50); */
-/*             bootloader_jump(); // not return */
-/*             break; */
-/*         default: */
-/*             return (action_t)ACTION_NO; */
-/*             break; */
-/*     } */
-/*     return (action_t)ACTION_NO; */
-/* } */
-
-action_t action_for_key(uint8_t layer, keypos_t key)
+action_t
+action_for_key(uint8_t layer, keypos_t key)
 {
     return (action_t)pgm_read_word(&actionmaps[0][key.row][key.col]);
 }
 
-typedef struct keypair {
+/* 
+ * Two keycode/modifier sets, 12 bits each.  The keyboard's shift
+ * state (which is independent of the mods stored here) determines the
+ * actual pair member to be reported.
+ */
+typedef struct {
     unsigned int code_u :8;
     unsigned int code_s :8;
     unsigned int mods_u :4;
@@ -104,7 +243,7 @@ typedef struct keypair {
  *   bit 0          |||+- Left Control
  *   bit 1          ||+-- Left Shift
  *   bit 2          |+--- Left Alt
- *   bit 3          +---- Right Alt
+ *   bit 3          +---- Right Alt (not Left GUI!)
  */
 enum keypair_mod {
     No = 0x00,                /* no mod */
@@ -114,7 +253,10 @@ enum keypair_mod {
     Ag = 0x08,                /* AltGr/Right Alt */
 };
 
-#define CHORD(COL0, COL1, COL2, COL3) ((COL0) | (COL1) << 2 | (COL2) << 4 | (COL3) << 6)
+/* 
+ * Keychords comprising one key per column from the upper three rows
+ */
+#define CHORD(COL0, COL1, COL2, COL3) ((COL0)<<6 | (COL1)<<4 | (COL2)<<2 | (COL3))
 #define KEYPAIR(UNSHIFTED_MODS, UNSHIFTED_CODE, SHIFTED_MODS, SHIFTED_CODE) \
     {.mods_u = (UNSHIFTED_MODS), .code_u = (KC_##UNSHIFTED_CODE), \
             .mods_s = (SHIFTED_MODS), .code_s = (KC_##SHIFTED_CODE)}
@@ -378,40 +520,48 @@ static keypair_t chordmap[256] EEMEM = {
     [CHORD(3, 3, 3, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
 };
 
-#define FN_CHORD(FN, ROW, COL_PATTERN) ((COL_PATTERN) | (((ROW) - 1) << 4) | ((FN) << 5))
 
-static action_t fn_chordmap[96] EEMEM = {
-    [FN_CHORD(0, 1, 0b0000)] = AC_A,
-    [FN_CHORD(0, 1, 0b0001)] = AC_B,
-    [FN_CHORD(0, 1, 0b0010)] = AC_C,
-    [FN_CHORD(0, 1, 0b0011)] = AC_D,
-    [FN_CHORD(0, 1, 0b0100)] = AC_E,
-    [FN_CHORD(0, 1, 0b0101)] = AC_F,
-    [FN_CHORD(0, 1, 0b0110)] = AC_G,
-    [FN_CHORD(0, 1, 0b0111)] = AC_H,
-    [FN_CHORD(0, 1, 0b1000)] = AC_I,
-    [FN_CHORD(0, 1, 0b1001)] = AC_J,
-    [FN_CHORD(0, 1, 0b1010)] = AC_K,
-    [FN_CHORD(0, 1, 0b1011)] = AC_L,
-    [FN_CHORD(0, 1, 0b1100)] = AC_M,
-    [FN_CHORD(0, 1, 0b1101)] = AC_N,
-    [FN_CHORD(0, 1, 0b1110)] = AC_O,
-    [FN_CHORD(0, 1, 0b1111)] = AC_P,
-    [FN_CHORD(0, 2, 0b0001)] = AC_Q,
-    [FN_CHORD(0, 2, 0b0010)] = AC_R,
-    [FN_CHORD(0, 2, 0b0011)] = AC_S,
-    [FN_CHORD(0, 2, 0b0100)] = AC_T,
-    [FN_CHORD(0, 2, 0b0101)] = AC_U,
-    [FN_CHORD(0, 2, 0b0110)] = AC_V,
-    [FN_CHORD(0, 2, 0b0111)] = AC_W,
-    [FN_CHORD(0, 2, 0b1000)] = AC_X,
-    [FN_CHORD(0, 2, 0b1001)] = AC_Y,
-    [FN_CHORD(0, 2, 0b1010)] = AC_Z,
-    [FN_CHORD(0, 2, 0b1011)] = AC_1,
-    [FN_CHORD(0, 2, 0b1100)] = AC_2,
-    [FN_CHORD(0, 2, 0b1101)] = AC_3,
-    [FN_CHORD(0, 2, 0b1110)] = AC_4,
-    [FN_CHORD(0, 2, 0b1111)] = AC_5,
+/*
+ * Keychords comprising a THUMB_ACTION(n)-mapped thumb chord FN and
+ * zero to four keys from one particular ROW of the upper three rows.
+ */
+#define FN_CHORD(FN, ROW, COL_PATTERN) (((FN)<<6) | ((ROW)<<4) | (COL_PATTERN))
+
+static action_t fn_chordmap[128] EEMEM = {
+    [FN_CHORD(0, 0, 0b0000)] = AC_KP_MINUS,
+    /* big hole */
+    [FN_CHORD(0, 1, 0b0001)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 1, 0b0010)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 1, 0b0011)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_LSFT | MOD_LALT),
+    [FN_CHORD(0, 1, 0b0100)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_LGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(0, 1, 0b0101)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_LGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 1, 0b0110)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_LGUI | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 1, 0b0111)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_LGUI | MOD_LSFT | MOD_LALT),
+    [FN_CHORD(0, 1, 0b1000)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_NONE | MOD_NONE | MOD_NONE),
+    [FN_CHORD(0, 1, 0b1001)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 1, 0b1010)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_NONE | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 1, 0b1011)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_NONE | MOD_LSFT | MOD_LALT),
+    [FN_CHORD(0, 1, 0b1100)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_LGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(0, 1, 0b1101)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_LGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 1, 0b1110)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_LGUI | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 1, 0b1111)] = ACTION_MODS_TAP_TOGGLE(MOD_LCTL | MOD_LGUI | MOD_LSFT | MOD_LALT),
+    /* hole */
+    [FN_CHORD(0, 2, 0b0001)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 2, 0b0010)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_NONE | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 2, 0b0011)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_NONE | MOD_LSFT | MOD_LALT),
+    [FN_CHORD(0, 2, 0b0100)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_LGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(0, 2, 0b0101)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_LGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 2, 0b0110)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_LGUI | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 2, 0b0111)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_LGUI | MOD_LSFT | MOD_LALT),
+    [FN_CHORD(0, 2, 0b1000)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_NONE | MOD_NONE | MOD_NONE),
+    [FN_CHORD(0, 2, 0b1001)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 2, 0b1010)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_NONE | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 2, 0b1011)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_NONE | MOD_LSFT | MOD_LALT),
+    [FN_CHORD(0, 2, 0b1100)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_LGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(0, 2, 0b1101)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_LGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(0, 2, 0b1110)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_LGUI | MOD_LSFT | MOD_NONE),
+    [FN_CHORD(0, 2, 0b1111)] = ACTION_MODS_ONESHOT(MOD_LCTL | MOD_LGUI | MOD_LSFT | MOD_LALT),
+    /* hole */
     [FN_CHORD(0, 3, 0b0001)] = AC_6,
     [FN_CHORD(0, 3, 0b0010)] = AC_7,
     [FN_CHORD(0, 3, 0b0011)] = AC_8,
@@ -427,37 +577,40 @@ static action_t fn_chordmap[96] EEMEM = {
     [FN_CHORD(0, 3, 0b1101)] = AC_H,
     [FN_CHORD(0, 3, 0b1110)] = AC_I,
     [FN_CHORD(0, 3, 0b1111)] = AC_J,
-    [FN_CHORD(1, 1, 0b0000)] = AC_K,
-    [FN_CHORD(1, 1, 0b0001)] = AC_L,
-    [FN_CHORD(1, 1, 0b0010)] = AC_M,
-    [FN_CHORD(1, 1, 0b0011)] = AC_N,
-    [FN_CHORD(1, 1, 0b0100)] = AC_O,
-    [FN_CHORD(1, 1, 0b0101)] = AC_P,
-    [FN_CHORD(1, 1, 0b0110)] = AC_Q,
-    [FN_CHORD(1, 1, 0b0111)] = AC_R,
-    [FN_CHORD(1, 1, 0b1000)] = AC_S,
-    [FN_CHORD(1, 1, 0b1001)] = AC_T,
-    [FN_CHORD(1, 1, 0b1010)] = AC_U,
-    [FN_CHORD(1, 1, 0b1011)] = AC_V,
-    [FN_CHORD(1, 1, 0b1100)] = AC_W,
-    [FN_CHORD(1, 1, 0b1101)] = AC_X,
-    [FN_CHORD(1, 1, 0b1110)] = AC_Y,
-    [FN_CHORD(1, 1, 0b1111)] = AC_Z,
-    [FN_CHORD(1, 2, 0b0001)] = AC_1,
-    [FN_CHORD(1, 2, 0b0010)] = AC_2,
-    [FN_CHORD(1, 2, 0b0011)] = AC_3,
-    [FN_CHORD(1, 2, 0b0100)] = AC_4,
-    [FN_CHORD(1, 2, 0b0101)] = AC_5,
-    [FN_CHORD(1, 2, 0b0110)] = AC_6,
-    [FN_CHORD(1, 2, 0b0111)] = AC_7,
-    [FN_CHORD(1, 2, 0b1000)] = AC_8,
-    [FN_CHORD(1, 2, 0b1001)] = AC_9,
-    [FN_CHORD(1, 2, 0b1010)] = AC_0,
-    [FN_CHORD(1, 2, 0b1011)] = AC_A,
-    [FN_CHORD(1, 2, 0b1100)] = AC_B,
-    [FN_CHORD(1, 2, 0b1101)] = AC_C,
-    [FN_CHORD(1, 2, 0b1110)] = AC_D,
-    [FN_CHORD(1, 2, 0b1111)] = AC_E,
+    [FN_CHORD(1, 0, 0b0000)] = AC_KP_PLUS,
+    /* big hole */
+    [FN_CHORD(1, 1, 0b0001)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 1, 0b0010)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 1, 0b0011)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_RSFT | MOD_LALT),
+    [FN_CHORD(1, 1, 0b0100)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_RGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(1, 1, 0b0101)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_RGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 1, 0b0110)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_RGUI | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 1, 0b0111)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_RGUI | MOD_RSFT | MOD_LALT),
+    [FN_CHORD(1, 1, 0b1000)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_NONE | MOD_NONE | MOD_NONE),
+    [FN_CHORD(1, 1, 0b1001)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 1, 0b1010)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_NONE | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 1, 0b1011)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_NONE | MOD_RSFT | MOD_LALT),
+    [FN_CHORD(1, 1, 0b1100)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_RGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(1, 1, 0b1101)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_RGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 1, 0b1110)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_RGUI | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 1, 0b1111)] = ACTION_MODS_TAP_TOGGLE(MOD_RCTL | MOD_RGUI | MOD_RSFT | MOD_LALT),
+    /* hole */
+    [FN_CHORD(1, 2, 0b0001)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 2, 0b0010)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_NONE | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 2, 0b0011)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_NONE | MOD_RSFT | MOD_LALT),
+    [FN_CHORD(1, 2, 0b0100)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_RGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(1, 2, 0b0101)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_RGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 2, 0b0110)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_RGUI | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 2, 0b0111)] = ACTION_MODS_ONESHOT(MOD_NONE | MOD_RGUI | MOD_RSFT | MOD_LALT),
+    [FN_CHORD(1, 2, 0b1000)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_NONE | MOD_NONE | MOD_NONE),
+    [FN_CHORD(1, 2, 0b1001)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_NONE | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 2, 0b1010)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_NONE | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 2, 0b1011)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_NONE | MOD_RSFT | MOD_LALT),
+    [FN_CHORD(1, 2, 0b1100)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_RGUI | MOD_NONE | MOD_NONE),
+    [FN_CHORD(1, 2, 0b1101)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_RGUI | MOD_NONE | MOD_LALT),
+    [FN_CHORD(1, 2, 0b1110)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_RGUI | MOD_RSFT | MOD_NONE),
+    [FN_CHORD(1, 2, 0b1111)] = ACTION_MODS_ONESHOT(MOD_RCTL | MOD_RGUI | MOD_RSFT | MOD_LALT),
+    /* hole */
     [FN_CHORD(1, 3, 0b0001)] = AC_F,
     [FN_CHORD(1, 3, 0b0010)] = AC_G,
     [FN_CHORD(1, 3, 0b0011)] = AC_H,
@@ -475,11 +628,14 @@ static action_t fn_chordmap[96] EEMEM = {
     [FN_CHORD(1, 3, 0b1111)] = AC_T,
 };
 
+/* 
+ * Keychords on the bottom row
+ */
 #define THUMB_CHORD(FN1, SHIFT, FN2) ((FN1) | ((SHIFT) << 1) | ((FN2) << 2))
 #define THUMB_ACTION(FN) ACTION(ACT_THUMB_CHORD, (FN))
 #define THUMB_SHIFT (ACT_THUMB_CHORD << 12 | MOD_LSFT << 8)
 
-static action_t thumb_chordmap[8] EEMEM = {
+static const action_t thumb_chordmap[8] PROGMEM = {
     [THUMB_CHORD(0, 0, 0)] = AC_NO,
     [THUMB_CHORD(0, 0, 1)] = THUMB_ACTION(0),
     [THUMB_CHORD(0, 1, 0)] = {.code = THUMB_SHIFT},
@@ -490,22 +646,69 @@ static action_t thumb_chordmap[8] EEMEM = {
     [THUMB_CHORD(1, 1, 1)] = AC_NO,
 };
 
+/* 
+ * Change bit patterns (representing keys pressed on columns) from two
+ * bit per colum like d0c0b0a0, 0d0c0b0a, or ddccbbaa into one bit per
+ * column like 00rrdcba.  The two rr bits represent the (single) row
+ * the keys belonged to.
+ */
 static uint8_t
 squeeze_chord (uint8_t c)
 {
-    uint8_t even_bits, odd_bits;
+    uint8_t even_bits, odd_bits, row;
 
     even_bits = (c & 1) | (c & 1<<2) >> 1 | (c & 1<<4) >> 2 | (c & 1<<6) >> 3;
     odd_bits = (c & 1<<1) >> 1 | (c & 1<<3) >> 2 | (c & 1<<5) >> 3 | (c & 1<<7) >> 4;
-    if (even_bits && odd_bits)
+    row = (c>>6 | c>>4 | c>>2 | c) & 3;
+    if (even_bits && odd_bits && even_bits != odd_bits)
         return 0;               /* no multi-row chords allowed here */
-    return even_bits | odd_bits;
+    return even_bits | odd_bits | row<<4;
 }
 
+static void
+emit_key(uint8_t mods, uint8_t keycode)
+{
+    register_mods(mods);
+    register_code(keycode);
+    unregister_code(keycode);
+    unregister_mods(mods);
+}
+
+/* /\* translates chord to action *\/ */
+/* static action_t chord_to_action(uint8_t chord) */
+/* { */
+/*     switch (chord) { */
+/*         case KC_A ... KC_EXSEL: */
+/*         case KC_LCTRL ... KC_RGUI: */
+/*             return (action_t)ACTION_KEY(keycode); */
+/*             break; */
+/*         case KC_SYSTEM_POWER ... KC_SYSTEM_WAKE: */
+/*             return (action_t)ACTION_USAGE_SYSTEM(KEYCODE2SYSTEM(keycode)); */
+/*             break; */
+/*         case KC_AUDIO_MUTE ... KC_WWW_FAVORITES: */
+/*             return (action_t)ACTION_USAGE_CONSUMER(KEYCODE2CONSUMER(keycode)); */
+/*             break; */
+/*         case KC_MS_UP ... KC_MS_ACCEL2: */
+/*             return (action_t)ACTION_MOUSEKEY(keycode); */
+/*             break; */
+/*         case KC_TRNS: */
+/*             return (action_t)ACTION_TRANSPARENT; */
+/*             break; */
+/*         case KC_BOOTLOADER: */
+/*             clear_keyboard(); */
+/*             wait_ms(50); */
+/*             bootloader_jump(); // not return */
+/*             break; */
+/*         default: */
+/*             return (action_t)ACTION_NO; */
+/*             break; */
+/*     } */
+/*     return (action_t)ACTION_NO; */
+/* } */
 void
 action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
 {
-    static uint8_t finger_chord = 0, thumb_chord = 0;
+    static uint8_t fng_chord = 0, thb_chord = 0;
     static int8_t keys_down = 0;
     static bool ready = true;
     keyevent_t e = record->event;
@@ -514,122 +717,73 @@ action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
     if (e.pressed) {
         keys_down++;
         if (ready) {
-            if (row == THUMB_ROW) {
-                thumb_chord |= 1 << col;
-            } else {
+            if (row == THUMB_ROW) { /* collect bottom row keys seperately */
+                thb_chord |= 1 << col;
+            } else {            /* finger keys; top three rows */
                 uint8_t byte_pos = col * 2;
 
-                finger_chord &= ~(3 << byte_pos);
-                finger_chord |= row << byte_pos;
+                fng_chord &= ~(3 << byte_pos);
+                fng_chord |= row << byte_pos;
             }
-            dprintf("COLLECTING THUMBCH:%X FINGERCH:%X ROW:%d COL:&d\n", thumb_chord, finger_chord, row, col);
+            dprintf("   COLLECTING THUMBCH:%X FINGERCH:%X ROW:%d COL:%d\n", thb_chord, fng_chord, row, col);
         }
     } else {
         if (ready) {
             keypair_t keypair = {0};
-            action_t thumb_status = {0};
-            uint8_t keycode = 0, mods = 0;
+            action_t thb_state = {0};
+            static uint8_t onesh_mods = 0, tgl_mods = 0;
             
-            thumb_status.code = eeprom_read_word((uint16_t *) thumb_chordmap + thumb_chord);
-            eeprom_read_block(&keypair, chordmap + finger_chord, sizeof(keypair));
-            if (thumb_status.code == KC_NO) {
-                keycode = keypair.code_u;
-                mods = (keypair.mods_u & ~Ag) | (keypair.mods_u & Ag) << 3;
-            } else if (thumb_status.code == THUMB_SHIFT) {
-                keycode = keypair.code_s;
-                mods = (keypair.mods_s & ~Ag) | (keypair.mods_s & Ag) << 3;
-            } else if (thumb_status.key.kind == ACT_MODS) {
-                keycode = thumb_status.key.code;
-                mods = thumb_status.key.mods;
-            } else if (thumb_status.code == (ACT_THUMB_CHORD << 12 & ~0xff)) {
-                uint8_t fn_chord = squeeze_chord(finger_chord) | (thumb_status.key.code & 1) << 5;
-                action_t fn_action;
+            led(8, TOGGLE);
+            thb_state.code = pgm_read_word((uint16_t *) thumb_chordmap + thb_chord);
+            eeprom_read_block(&keypair, chordmap + fng_chord, sizeof(keypair));
+            if (thb_state.code == KC_NO) {
+                emit_key((keypair.mods_u & ~Ag) | (keypair.mods_u & Ag) << 3 |
+                         onesh_mods | tgl_mods, keypair.code_u);
+                onesh_mods = 0;
+            } else if (thb_state.code == THUMB_SHIFT) {
+                emit_key((keypair.mods_s & ~Ag) | (keypair.mods_s & Ag) << 3 |
+                         onesh_mods | tgl_mods, keypair.code_s);
+                onesh_mods = 0;
+            } else if (thb_state.key.kind == ACT_MODS) {
+                emit_key(thb_state.key.mods | onesh_mods | tgl_mods,
+                         thb_state.key.code);
+                onesh_mods = 0;
+            } else if (thb_state.kind.id == ACT_THUMB_CHORD) {
+                action_t fn_act;
+                uint8_t fn_chord = squeeze_chord(fng_chord) |
+                    ((thb_state.key.code & 1) << 6);
 
-                fn_action.code = eeprom_read_word((uint16_t *) fn_chordmap + fn_chord);
-                keycode = fn_action.key.code;
-                mods = fn_action.key.mods;
+                fn_act.code = eeprom_read_word((uint16_t *) fn_chordmap + fn_chord);
+                dprintf("   FN_ACTION:: squeezedchord:%X code:%d mods%d RAW-CHMP@%d:%X\n",
+                        fn_chord, fn_act.key.code, fn_act.key.mods | onesh_mods, fn_chord, fn_act.code);
+                if (fn_act.kind.id == ACT_LMODS_TAP ||
+                    fn_act.kind.id == ACT_RMODS_TAP) {
+                    uint8_t mods = fn_act.key.mods;
+
+                    if (fn_act.kind.id == ACT_RMODS_TAP)
+                        mods <<= 4;
+                    switch (fn_act.key.code) {
+                    case MODS_ONESHOT:
+                        onesh_mods = mods;
+                        break;
+                    case MODS_TAP_TOGGLE:
+                        tgl_mods ^= mods;
+                        break;
+                    }
+                } else {
+                    emit_key(fn_act.key.mods | onesh_mods | tgl_mods,
+                             fn_act.key.code);
+                    onesh_mods = 0;
+                }
             }
-
-                
-            dprintf("done THUMBCODE:%X FINGERCH:%X ROW:%d COL: %d keypaircode=%d/%d keypairmods=%d/%d KEYCODE:%d MODS:%d\n", thumb_status.code, finger_chord, row, col, keypair.code_u, keypair.code_s, keypair.mods_u, keypair.mods_s, keycode, mods);
-            register_mods(mods);
-            register_code(keycode);
-            unregister_code(keycode);
-            unregister_mods(mods);
+            dprintf("   done THUMBCODE:%X FINGERCH:%X ROW:%d COL: %d keypaircode=%d/%d keypairmods=%d/%d\n",
+                    thb_state.code, fng_chord, row, col, keypair.code_u, keypair.code_s, keypair.mods_u, keypair.mods_s);
             ready = false;
         }
         if (--keys_down == 0) {
             ready = true;
-            finger_chord = 0;
-            thumb_chord = 0;
+            fng_chord = 0;
+            thb_chord = 0;
         }
-    }
-}
-
-/*
- * LED pin configuration
- * LED: NumLock           ScrollLock CapsLock
- * pin: C6 C5 D6 D5 D4 D0            B7 B6 B5 B4 B1 B0
- */
-
-void
-led_set(uint8_t usb_led)
-{
-    if (usb_led & (1<<USB_LED_NUM_LOCK)) {
-        DDRC |=  (1<<6);
-        PORTC |= (1<<6);
-        DDRC |=  (1<<5);
-        PORTC |= (1<<5);
-        DDRD |=  (1<<6);
-        PORTD |= (1<<6);
-        DDRD |=  (1<<5);
-        PORTD |= (1<<5);
-        DDRD |=  (1<<4);
-        PORTD |= (1<<4);
-        DDRD |=  (1<<0);
-        PORTD |= (1<<0);
-    } else {
-        DDRC |=  (1<<6);
-        PORTC &= ~(1<<6);
-        DDRC |=  (1<<5);
-        PORTC &= ~(1<<5);
-        DDRD |=  (1<<6);
-        PORTD &= ~(1<<6);
-        DDRD |=  (1<<5);
-        PORTD &= ~(1<<5);
-        DDRD |=  (1<<4);
-        PORTD &= ~(1<<4);
-        DDRD |=  (1<<0);
-        PORTD &= ~(1<<0);
-    }
-    if (usb_led & (1<<USB_LED_SCROLL_LOCK)) {
-    } else {
-    }
-    if (usb_led & (1<<USB_LED_CAPS_LOCK)) {
-        DDRB |=  (1<<7);
-        PORTB |= (1<<7);
-        DDRB |=  (1<<6);
-        PORTB |= (1<<6);
-        DDRB |=  (1<<5);
-        PORTB |= (1<<5);
-        DDRB |=  (1<<4);
-        PORTB |= (1<<4);
-        DDRB |=  (1<<1);
-        PORTB |= (1<<1);
-        DDRB |=  (1<<0);
-        PORTB |= (1<<0);
-    } else {
-        DDRB |=  (1<<7);
-        PORTB &= ~(1<<7);
-        DDRB |=  (1<<6);
-        PORTB &= ~(1<<6);
-        DDRB |=  (1<<5);
-        PORTB &= ~(1<<5);
-        DDRB |=  (1<<4);
-        PORTB &= ~(1<<4);
-        DDRB |=  (1<<1);
-        PORTB &= ~(1<<1);
-        DDRB |=  (1<<0);
-        PORTB &= ~(1<<0);
     }
 }
