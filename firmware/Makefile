@@ -161,7 +161,7 @@ cflow: cflow-$(KEYMAP).out
 cflow-$(KEYMAP).out: *.c *.h Makefile
 	ln -s $(TMK_DIR)/common common
 	ln -s $(TMK_DIR)/protocol protocol
-	cflow -o$@ -Tnblm keyboard_task \
+	cflow -Tnbm keyboard_task \
 		$(SRC) \
 		--cpp='avr-gcc -E -I. -I./common -I./protocol' \
 		$(OPT_DEFS) \
@@ -174,10 +174,36 @@ cflow-$(KEYMAP).out: *.c *.h Makefile
 		--symbol __attribute__:wrapper \
 		--symbol __asm__:wrapper \
 		--symbol __nonnull:wrapper \
-		--symbol __wur:wrapper
+		--symbol __wur:wrapper | \
+	fold -s | \
+	awk 'BEGIN{FS="-"} \
+		/^ *[0-9]+ .*-/ { \
+			prefix=$$1; \
+			print $$0; \
+		} \
+		!/^[\| 0-9]+ [\\\\+]?-/ { \
+			gsub("[0-9\\\\]", " ", prefix); \
+			sub("+", "|", prefix); \
+			print prefix, "> ", $$0 \
+		}' | \
+	fold -s | \
+	awk 'BEGIN{FS=">"} \
+		/^[\| ]+*> / { \
+			prefix = $$1; \
+			print $$0; \
+		} \
+		/^ *[0-9]+[\| ]+[\\\\+]?-/ {\
+			print $$0; \
+		} \
+		!/^[\| 0-9]+ [\\\\+]?-|        / { \
+			print prefix "> ", $$0; \
+		}' > $@
 	rm common protocol
 
 clean:
 	rm -rf cflow-$(KEYMAP).out
-	test ! -d common || rmdir common
-	test ! -d protocol || rmdir protocol
+	test ! -d common || rm common
+	test ! -d protocol || rm protocol
+
+
+
