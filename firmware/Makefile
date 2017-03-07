@@ -155,3 +155,29 @@ VPATH += $(TMK_DIR)
 include $(TMK_DIR)/protocol/lufa.mk
 include $(TMK_DIR)/common.mk
 include $(TMK_DIR)/rules.mk
+
+cflow: cflow-$(KEYMAP).out
+
+cflow-$(KEYMAP).out: *.c *.h Makefile
+	ln -s $(TMK_DIR)/common common
+	ln -s $(TMK_DIR)/protocol protocol
+	cflow -o$@ -Tnblm keyboard_task \
+		$(SRC) \
+		--cpp='avr-gcc -E -I. -I./common -I./protocol' \
+		$(OPT_DEFS) \
+		--symbol __inline:=inline \
+		--symbol __inline__:=inline \
+		--symbol __const__:=const \
+		--symbol __const:=const \
+		--symbol __restrict:=restrict \
+		--symbol __extension__:qualifier \
+		--symbol __attribute__:wrapper \
+		--symbol __asm__:wrapper \
+		--symbol __nonnull:wrapper \
+		--symbol __wur:wrapper
+	rm common protocol
+
+clean:
+	rm -rf cflow-$(KEYMAP).out
+	test ! -d common || rmdir common
+	test ! -d protocol || rmdir protocol
