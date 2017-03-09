@@ -183,7 +183,7 @@ cflow-$(KEYMAP).out: *.c *.h Makefile
 		} \
 		!/^[\| 0-9]+ [\\\\+]?-/ { \
 			gsub("[0-9\\\\]", " ", prefix); \
-			sub("+", "|", prefix); \
+			sub("\\+", "|", prefix); \
 			print prefix, "> ", $$0 \
 		}' | \
 	fold -s | \
