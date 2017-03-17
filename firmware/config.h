@@ -46,7 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DEBUG_ACTION
 
 /* enable print */
-#undef NO_PRINT
+/* #undef NO_PRINT */
 
 /* disable action features */
 /* #define NO_ACTION_LAYER */
