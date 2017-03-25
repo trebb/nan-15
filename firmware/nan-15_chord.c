@@ -62,7 +62,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Define individual keys
  *************************************************************/
 
-
 typedef union {
     uint8_t raw;
     struct {
@@ -72,46 +71,57 @@ typedef union {
 } keycoord_t;
 
 enum func_id {
-    PRINT,
-    SWAP_CHRDS,
     RESET,
     FNG_CHRD,
     THB_CHRD,
-    SWITCH_LAYER,
+    CHG_LAYER,
+    SWAP_CHRDS,
+    MCR_RECORD,
+    MCR_PLAY,
+    PRINT,
 };
 
-/* action_function() dispatches on ACFUNC()'s and POSFUNC()'s func_id */
-#define ACFUNC(param, func_id) ACTION_FUNCTION_OPT((param), (func_id))
-#define POSFUNC(row, col, func_id) ACFUNC((row) | (col)<<3, (func_id))
+/* action_function() dispatches on AF()'s and PF()'s func_id */
+#define AF(param, func_id) ACTION_FUNCTION_OPT((param), (func_id))
+#define PF(row, col, func_id) AF((row) | (col)<<3, (func_id))
 
-enum layer {L_DEFAULT = 0, L_NUM, L_NAV, L_MOUSE};
+enum layer {L_DFLT = 0, L_NUM, L_NAV, L_MSE, L_MCR,};
 
 static const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
-    [L_DEFAULT] = {             /* keychord keys */
-        {POSFUNC(1, 3, FNG_CHRD), POSFUNC(1, 2, FNG_CHRD), POSFUNC(1, 1, FNG_CHRD), POSFUNC(1, 0, FNG_CHRD),},
-        {POSFUNC(2, 3, FNG_CHRD), POSFUNC(2, 2, FNG_CHRD), POSFUNC(2, 1, FNG_CHRD), POSFUNC(2, 0, FNG_CHRD),},
-        {POSFUNC(3, 3, FNG_CHRD), POSFUNC(3, 2, FNG_CHRD), POSFUNC(3, 1, FNG_CHRD), POSFUNC(3, 0, FNG_CHRD),},
-        {POSFUNC(4, 2, THB_CHRD), ACTION_NO,               POSFUNC(4, 1, THB_CHRD), POSFUNC(4, 0, THB_CHRD),},
+    [L_DFLT] = {                /* keychord keys */
+        {PF(1, 3, FNG_CHRD), PF(1, 2, FNG_CHRD), PF(1, 1, FNG_CHRD), PF(1, 0, FNG_CHRD),},
+        {PF(2, 3, FNG_CHRD), PF(2, 2, FNG_CHRD), PF(2, 1, FNG_CHRD), PF(2, 0, FNG_CHRD),},
+        {PF(3, 3, FNG_CHRD), PF(3, 2, FNG_CHRD), PF(3, 1, FNG_CHRD), PF(3, 0, FNG_CHRD),},
+        {PF(4, 2, THB_CHRD), AC_NO,              PF(4, 1, THB_CHRD), PF(4, 0, THB_CHRD),},
     },
     [L_NUM] = {                 /* numpad */
-        {AC_P7,    AC_P8, AC_P9, AC_BSPC,},
-        {AC_P4,    AC_P5, AC_P6, AC_PDOT,},
-        {AC_P1,    AC_P2, AC_P3, AC_SPC, },
-        {ACFUNC(L_DEFAULT, SWITCH_LAYER), AC_P0, AC_NO, AC_ENT, },
+        {AC_P7,                 AC_P8, AC_P9, AC_BSPC,},
+        {AC_P4,                 AC_P5, AC_P6, AC_PDOT,},
+        {AC_P1,                 AC_P2, AC_P3, AC_SPC, },
+        {AF(L_DFLT, CHG_LAYER), AC_NO, AC_P0, AC_ENT, },
     },
     [L_NAV] = {                 /* nav */
-        {AC_HOME,  AC_UP,   AC_PGUP,   AC_BSPC,},
-        {AC_LEFT,  AC_NO,   AC_RIGHT,  AC_INS, },
-        {AC_END,   AC_DOWN, AC_PGDOWN, AC_DEL, },
-        {ACFUNC(L_DEFAULT, SWITCH_LAYER), AC_P0,   AC_NO,     AC_ENT, },
+        {AC_HOME,               AC_UP,   AC_PGUP,   AC_BSPC,},
+        {AC_LEFT,               AC_NO,   AC_RIGHT,  AC_INS, },
+        {AC_END,                AC_DOWN, AC_PGDOWN, AC_DEL, },
+        {AF(L_DFLT, CHG_LAYER), AC_NO,   AC_P0,     AC_ENT, },
     },
-    [L_MOUSE] = {               /* mouse */
-        {AC_MS_WH_LEFT, AC_MS_UP,   AC_MS_WH_RIGHT, AC_MS_WH_UP,  },
-        {AC_MS_LEFT,    AC_MS_BTN1, AC_MS_RIGHT,    AC_MS_WH_DOWN,},
-        {AC_MS_BTN2,    AC_MS_DOWN, AC_MS_BTN3,     AC_MS_BTN4,   },
-        {ACFUNC(L_DEFAULT, SWITCH_LAYER),      AC_MS_BTN1, AC_NO,          AC_MS_BTN5,   },
+    [L_MSE] = {                 /* mouse */
+        {AC_MS_WH_LEFT,         AC_MS_UP,   AC_MS_WH_RIGHT, AC_MS_WH_UP,  },
+        {AC_MS_LEFT,            AC_MS_BTN1, AC_MS_RIGHT,    AC_MS_WH_DOWN,},
+        {AC_MS_BTN2,            AC_MS_DOWN, AC_MS_BTN3,     AC_MS_BTN4,   },
+        {AF(L_DFLT, CHG_LAYER), AC_NO,      AC_MS_BTN1,     AC_MS_BTN5,   },
+    },
+    [L_MCR] = {                 /* macro pad */
+        {AF(KC_FN0, MCR_PLAY),  AF(KC_FN1, MCR_PLAY), AF(KC_FN2, MCR_PLAY), AF(KC_FN3, MCR_PLAY),},
+        {AF(KC_FN4, MCR_PLAY),  AF(KC_FN5, MCR_PLAY), AF(KC_FN6, MCR_PLAY), AF(KC_FN7, MCR_PLAY),},
+        {AF(L_NUM, CHG_LAYER),  AF(L_NAV, CHG_LAYER), AF(L_MSE, CHG_LAYER), AC_SPC,              },
+        {AF(L_DFLT, CHG_LAYER), AC_NO,                AC_P0,                AC_ENT,              },
     },
 };
+
+#define MCR_LEN 6             /* chords per macro */
+#define MCR_MAX 8             /* number of macros */
 
 action_t
 action_for_key(uint8_t layer, keypos_t key)
@@ -154,7 +164,10 @@ enum keypair_mod {
 
 /* AltGr in keypair mods becomes Alt in mods */
 #define KEYPAIR_MODS_TO_MODS(KEYPAIR_MODS) \
-    ((((KEYPAIR_MODS) & ~Ag)) | ((KEYPAIR_MODS) & Ag)<<3)
+    (((KEYPAIR_MODS) & ~Ag) | ((KEYPAIR_MODS) & Ag)<<3)
+
+#define MODS_TO_KEYPAIR_MODS(MODS) \
+    (((MODS) & ~(Ag<<4))>>4 | ((MODS) & Al<<4)>>3 | ((MODS) & 0x0f))
 
 /*
  * Keychords comprising one key per column on the upper three rows
@@ -381,46 +394,46 @@ static keypair_t chrdmap[256] EEMEM = {
     [CHRD(3, 1, 1, 1)] = KEYPAIR(Ag, DOT,         Ag|Sh, DOT           ),
     [CHRD(3, 1, 1, 2)] = KEYPAIR(Ag, SLASH,       Ag|Sh, SLASH         ),
     [CHRD(3, 1, 1, 3)] = KEYPAIR(Ag, NONUS_BSLASH,Ag|Sh, NONUS_BSLASH  ),
-    [CHRD(3, 1, 2, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 2, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 2, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 2, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 3, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 3, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 3, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 1, 3, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 0, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 0, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 0, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 0, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 1, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 1, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 1, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 1, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 2, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 2, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 2, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 2, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 3, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 3, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 3, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 2, 3, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 0, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 0, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 0, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 0, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 1, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 1, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 1, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 1, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 2, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 2, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 2, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 2, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 3, 0)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 3, 1)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 3, 2)] = KEYPAIR(No, NO,             Sh, NO            ),
-    [CHRD(3, 3, 3, 3)] = KEYPAIR(No, NO,             Sh, NO            ),
+    [CHRD(3, 1, 2, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 2, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 2, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 2, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 3, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 3, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 3, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 1, 3, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 0, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 0, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 0, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 0, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 1, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 1, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 1, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 1, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 2, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 2, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 2, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 2, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 3, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 3, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 3, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 2, 3, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 0, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 0, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 0, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 0, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 1, 0)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 1, 1)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 1, 2)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 1, 3)] = KEYPAIR(No, NO,             No, NO            ),
+    [CHRD(3, 3, 2, 0)] = KEYPAIR(No, FN0,            No, NO            ),
+    [CHRD(3, 3, 2, 1)] = KEYPAIR(No, FN1,            No, NO            ),
+    [CHRD(3, 3, 2, 2)] = KEYPAIR(No, FN2,            No, NO            ),
+    [CHRD(3, 3, 2, 3)] = KEYPAIR(No, FN3,            No, NO            ),
+    [CHRD(3, 3, 3, 0)] = KEYPAIR(No, FN4,            No, NO            ),
+    [CHRD(3, 3, 3, 1)] = KEYPAIR(No, FN5,            No, NO            ),
+    [CHRD(3, 3, 3, 2)] = KEYPAIR(No, FN6,            No, NO            ),
+    [CHRD(3, 3, 3, 3)] = KEYPAIR(No, FN7,            No, NO            ),
 };
 
 /*
@@ -428,9 +441,9 @@ static keypair_t chrdmap[256] EEMEM = {
  * zero to four keys from one particular ROW of the upper three rows.
  */
 #define FN_CHRD(FN, ROW, ROW_PATTERN) (((FN)<<6) | ((ROW)<<4) | (ROW_PATTERN))
-/* fn_chrdfunc() dispatches on id of ACFUNC(opt, id) used here */
+/* fn_chrdfunc() dispatches on id of AF(opt, id) used here */
 static action_t fn_chrdmap[128] EEMEM = {
-    [FN_CHRD(0, 0, 0b0000)] = AC_KP_MINUS,
+    [FN_CHRD(0, 0, 0b0000)] = AC_NO,
     /* hole: 0x01-0x10 */
     [FN_CHRD(0, 1, 0b0001)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_NONE | MOD_LCTL),
     [FN_CHRD(0, 1, 0b0010)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_LGUI | MOD_NONE),
@@ -464,22 +477,22 @@ static action_t fn_chrdmap[128] EEMEM = {
     [FN_CHRD(0, 2, 0b1110)] =    ACTION_MODS_ONESHOT(MOD_LALT | MOD_LSFT | MOD_LGUI | MOD_NONE),
     [FN_CHRD(0, 2, 0b1111)] =    ACTION_MODS_ONESHOT(MOD_LALT | MOD_LSFT | MOD_LGUI | MOD_LCTL),
     /* hole: 0x30 */
-    [FN_CHRD(0, 3, 0b0001)] = AC_6,
-    [FN_CHRD(0, 3, 0b0010)] = AC_7,
-    [FN_CHRD(0, 3, 0b0011)] = ACFUNC(L_NUM, SWITCH_LAYER),
-    [FN_CHRD(0, 3, 0b0100)] = AC_9,
-    [FN_CHRD(0, 3, 0b0101)] = AC_0,
-    [FN_CHRD(0, 3, 0b0110)] = ACFUNC(0, SWAP_CHRDS),
-    [FN_CHRD(0, 3, 0b0111)] = ACFUNC(0, PRINT),
-    [FN_CHRD(0, 3, 0b1000)] = AC_C,
-    [FN_CHRD(0, 3, 0b1001)] = ACFUNC(L_MOUSE, SWITCH_LAYER),
-    [FN_CHRD(0, 3, 0b1010)] = AC_E,
-    [FN_CHRD(0, 3, 0b1011)] = AC_F,
-    [FN_CHRD(0, 3, 0b1100)] = ACFUNC(L_NAV, SWITCH_LAYER),
-    [FN_CHRD(0, 3, 0b1101)] = AC_H,
-    [FN_CHRD(0, 3, 0b1110)] = AC_I,
-    [FN_CHRD(0, 3, 0b1111)] = AC_J,
-    [FN_CHRD(1, 0, 0b0000)] = AC_KP_PLUS,
+    [FN_CHRD(0, 3, 0b0001)] = AC_NO,
+    [FN_CHRD(0, 3, 0b0010)] = AC_NO,
+    [FN_CHRD(0, 3, 0b0011)] = AF(L_NUM, CHG_LAYER),
+    [FN_CHRD(0, 3, 0b0100)] = AC_NO,
+    [FN_CHRD(0, 3, 0b0101)] = AC_NO,
+    [FN_CHRD(0, 3, 0b0110)] = AF(0, SWAP_CHRDS),
+    [FN_CHRD(0, 3, 0b0111)] = AF(0, PRINT),
+    [FN_CHRD(0, 3, 0b1000)] = AC_NO,
+    [FN_CHRD(0, 3, 0b1001)] = AF(L_MSE, CHG_LAYER),
+    [FN_CHRD(0, 3, 0b1010)] = AC_NO,
+    [FN_CHRD(0, 3, 0b1011)] = AC_NO,
+    [FN_CHRD(0, 3, 0b1100)] = AF(L_NAV, CHG_LAYER),
+    [FN_CHRD(0, 3, 0b1101)] = AC_NO,
+    [FN_CHRD(0, 3, 0b1110)] = AF(L_MCR, CHG_LAYER),
+    [FN_CHRD(0, 3, 0b1111)] = AF(0, MCR_RECORD),
+    [FN_CHRD(1, 0, 0b0000)] = AC_NO,
     /* hole: 0x41-0x50*/
     [FN_CHRD(1, 1, 0b0001)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_NONE | MOD_RCTL),
     [FN_CHRD(1, 1, 0b0010)] = ACTION_MODS_TAP_TOGGLE(MOD_NONE | MOD_NONE | MOD_RGUI | MOD_NONE),
@@ -513,24 +526,28 @@ static action_t fn_chrdmap[128] EEMEM = {
     [FN_CHRD(1, 2, 0b1110)] =    ACTION_MODS_ONESHOT(MOD_RALT | MOD_RSFT | MOD_RGUI | MOD_NONE),
     [FN_CHRD(1, 2, 0b1111)] =    ACTION_MODS_ONESHOT(MOD_RALT | MOD_RSFT | MOD_RGUI | MOD_RCTL),
     /* hole: 0x70 */
-    [FN_CHRD(1, 3, 0b0001)] = AC_F,
-    [FN_CHRD(1, 3, 0b0010)] = AC_G,
-    [FN_CHRD(1, 3, 0b0011)] = AC_H,
-    [FN_CHRD(1, 3, 0b0100)] = AC_I,
-    [FN_CHRD(1, 3, 0b0101)] = AC_J,
-    [FN_CHRD(1, 3, 0b0110)] = AC_K,
-    [FN_CHRD(1, 3, 0b0111)] = AC_L,
-    [FN_CHRD(1, 3, 0b1000)] = AC_M,
-    [FN_CHRD(1, 3, 0b1001)] = AC_N,
-    [FN_CHRD(1, 3, 0b1010)] = AC_O,
-    [FN_CHRD(1, 3, 0b1011)] = AC_P,
-    [FN_CHRD(1, 3, 0b1100)] = AC_Q,
-    [FN_CHRD(1, 3, 0b1101)] = AC_R,
-    [FN_CHRD(1, 3, 0b1110)] = AC_S,
-    [FN_CHRD(1, 3, 0b1111)] = AC_T,
+    [FN_CHRD(1, 3, 0b0001)] = AC_NO,
+    [FN_CHRD(1, 3, 0b0010)] = AC_NO,
+    [FN_CHRD(1, 3, 0b0011)] = AC_NO,
+    [FN_CHRD(1, 3, 0b0100)] = AC_NO,
+    [FN_CHRD(1, 3, 0b0101)] = AC_NO,
+    [FN_CHRD(1, 3, 0b0110)] = AC_NO,
+    [FN_CHRD(1, 3, 0b0111)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1000)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1001)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1010)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1011)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1100)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1101)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1110)] = AC_NO,
+    [FN_CHRD(1, 3, 0b1111)] = AC_NO,
 };
 
-static const uint8_t fn_chrdmap_holes[128] PROGMEM = {
+/*
+ * Cells in fn_chrdmap that are unreachable because they are mapped to
+ * impossible chords.  We'll be using them for macro storage.
+ */
+static const uint8_t fn_chrdmap_holes[36] PROGMEM = {
     0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
     0x10, 0x20, 0x30,
@@ -539,8 +556,12 @@ static const uint8_t fn_chrdmap_holes[128] PROGMEM = {
     0x50, 0x60, 0x70,
 };
 
+#if MCR_LEN * MCR_MAX > 48
+#    error "Macro space exceeds sizeof(fn_chrdmap_holes) * 16bit / 12bit"
+#endif
+
 /*
- * Keychords on the bottom row
+ * Keychords on the bottom row.  Not stored in EEPROM; immutable.
  */
 #define ACT_THB_CHRD ACT_MODS_TAP
 #define THB_CHRD(FN1, UPPER, FN2) ((FN1) | ((UPPER)<<1) | ((FN2)<<2))
@@ -548,14 +569,14 @@ static const uint8_t fn_chrdmap_holes[128] PROGMEM = {
 #define THB_UP (ACT_THB_CHRD<<12 | MOD_LSFT<<8)
 
 static const action_t thb_chrdmap[8] PROGMEM = {
-    [THB_CHRD(0, 0, 0)] = AC_NO,
+    [THB_CHRD(0, 0, 0)] = AC_NO, /* unreachable */
     [THB_CHRD(0, 0, 1)] = THB_ACTION(0),
     [THB_CHRD(0, 1, 0)] = {.code = THB_UP},
-    [THB_CHRD(0, 1, 1)] = AC_X,
+    [THB_CHRD(0, 1, 1)] = AC_NO,
     [THB_CHRD(1, 0, 0)] = THB_ACTION(1),
     [THB_CHRD(1, 0, 1)] = AC_ESCAPE,
-    [THB_CHRD(1, 1, 0)] = AC_Y,
-    [THB_CHRD(1, 1, 1)] = ACFUNC(0, RESET),
+    [THB_CHRD(1, 1, 0)] = AC_NO,
+    [THB_CHRD(1, 1, 1)] = AF(0, RESET),
   };
 
 
@@ -783,13 +804,22 @@ static const char code_name[][CODE_NAME_LEN + 1] PROGMEM = {
     [KC_RSHIFT]              = "rshift",
     [KC_RALT]                = "ralt",
     [KC_RGUI]                = "rgui",
+    [KC_FN0]                 = "macro_0",
+    [KC_FN1]                 = "macro_1",
+    [KC_FN2]                 = "macro_2",
+    [KC_FN3]                 = "macro_3",
+    [KC_FN4]                 = "macro_4",
+    [KC_FN5]                 = "macro_5",
+    [KC_FN6]                 = "macro_6",
+    [KC_FN7]                 = "macro_7",
 };
 
 static const char chrdfunc_name[][CODE_NAME_LEN + 1] PROGMEM = {
-    [SWITCH_LAYER] = "switch l",
-    [SWAP_CHRDS]   = "swap chds",
-    [PRINT]        = "prnt chds",
-    [RESET]        = "reset kbd",
+    [CHG_LAYER]  = "chg layer",
+    [SWAP_CHRDS] = "swap chds",
+    [MCR_RECORD] = "rec macro",
+    [PRINT]      = "prnt chds",
+    [RESET]      = "reset kbd",
 };
 
     
@@ -797,11 +827,10 @@ static const char chrdfunc_name[][CODE_NAME_LEN + 1] PROGMEM = {
  * Illumination
  *************************************************************/
 
-enum led_cmd {OFF = 0, ON = 1, TOGGLE, STATE};
+enum led_cmd {OFF = 0, ON = 1, STATE};
 #define FOREVER UINT8_MAX
 #define LED_ON(port, bit) {(PORT##port) |= (1<<(bit));} while (0)
 #define LED_OFF(port, bit) {(PORT##port) &= ~(1<<(bit));} while (0)
-#define LED_TOGGLE(port, bit) {(PORT##port) ^= (1<<(bit));} while (0)
 #define LED_STATE(port, bit) ((PORT##port) & (1<<(bit)))
 #define LED_INIT(port, bit) {(DDR##port) |= (1<<(bit));} while (0)
 
@@ -844,22 +873,6 @@ led(uint8_t led, uint8_t cmd)
         case 11: LED_OFF(C, 6); break;
         }
         break;
-    case TOGGLE:
-        switch (led) {
-        case 0: LED_TOGGLE(D, 0); break;
-        case 1: LED_TOGGLE(D, 4); break;
-        case 2: LED_TOGGLE(D, 5); break;
-        case 3: LED_TOGGLE(D, 6); break;
-        case 4: LED_TOGGLE(B, 0); break;
-        case 5: LED_TOGGLE(B, 1); break;
-        case 6: LED_TOGGLE(B, 4); break;
-        case 7: LED_TOGGLE(B, 5); break;
-        case 8: LED_TOGGLE(B, 6); break;
-        case 9: LED_TOGGLE(B, 7); break;
-        case 10: LED_TOGGLE(C, 5); break;
-        case 11: LED_TOGGLE(C, 6); break;
-        }
-        break;
     case STATE:
         switch (led) {
         case 0: return LED_STATE(D, 0); break;
@@ -897,14 +910,12 @@ led_init(void)
     LED_INIT(C, 6);
 }
 
-struct blink_state {
+static struct {
     uint8_t on;
     uint8_t off;
     uint16_t last;
     uint8_t cycles;
-};
-
-static struct blink_state leds[12] = {{0}};
+} leds[12] = {{0}};
 
 static void
 update_leds(void)
@@ -912,33 +923,24 @@ update_leds(void)
     int8_t i;
 
     for (i = 0; i < 12; i++) {
-        if (leds[i].on) {
-            if (led(i, STATE)) {
-                if (timer_elapsed(leds[i].last) > leds[i].on) {
-                    led(i, OFF);
-                    leds[i].last = timer_read();
-                }
-            } else {
-                if (timer_elapsed(leds[i].last) > leds[i].off && leds[i].cycles > 0) {
-                    led(i, ON);
-                    leds[i].last = timer_read();
-                    if (leds[i].cycles != FOREVER)
-                        leds[i].cycles--;
-                }
+        if (led(i, STATE)) {
+            if (timer_elapsed(leds[i].last) > leds[i].on) {
+                led(i, OFF);
+                leds[i].last = timer_read();
+            }
+        } else {
+            if (timer_elapsed(leds[i].last) > leds[i].off && leds[i].cycles > 0) {
+                led(i, ON);
+                leds[i].last = timer_read();
+                if (leds[i].cycles != FOREVER)
+                    leds[i].cycles--;
             }
         }
     }
 }
 
-struct ledset {
-    uint8_t len;
-    uint8_t leds[12];
-};
-
 enum ledset_id {
     LEDS_NO_KEYCODE,
-    LEDS_SWAP_FIRST,
-    LEDS_SWAP_SECOND,
     LEDS_NUM_LOCK,
     LEDS_SCROLL_LOCK,
     LEDS_SFT,
@@ -946,14 +948,19 @@ enum ledset_id {
     LEDS_ALT,
     LEDS_GUI,
     LEDS_ALL_MODS,
+    LEDS_CHG_LAYER,
+    LEDS_SWAP_FIRST,
+    LEDS_SWAP_SECOND,
+    LEDS_RECORD_MCR,
     LEDS_PRINT,
     LEDS_RESET,
 };
 
-static const struct ledset ledsets[] PROGMEM = {
+static const struct {
+    uint8_t len;
+    uint8_t leds[12];
+} ledsets[] PROGMEM = {
     [LEDS_NO_KEYCODE]  = {.len = 3,  .leds = {0, 1, 8}},
-    [LEDS_SWAP_FIRST]  = {.len = 2,  .leds = {4, 9}},
-    [LEDS_SWAP_SECOND] = {.len = 2,  .leds = {2, 11}},
     [LEDS_NUM_LOCK]    = {.len = 1,  .leds = {6}},
     [LEDS_SCROLL_LOCK] = {.len = 1,  .leds = {7}},
     [LEDS_SFT]         = {.len = 1,  .leds = {5}},
@@ -961,21 +968,27 @@ static const struct ledset ledsets[] PROGMEM = {
     [LEDS_ALT]         = {.len = 2,  .leds = {3, 10}},
     [LEDS_GUI]         = {.len = 2,  .leds = {2, 11}},
     [LEDS_ALL_MODS]    = {.len = 7,  .leds = {2, 3, 4, 5, 9, 10, 11}},
+    [LEDS_CHG_LAYER]   = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
+    [LEDS_SWAP_FIRST]  = {.len = 2,  .leds = {4, 9}},
+    [LEDS_SWAP_SECOND] = {.len = 2,  .leds = {2, 11}},
+    [LEDS_RECORD_MCR]  = {.len = 3,  .leds = {0, 1, 8}},
     [LEDS_PRINT]       = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
     [LEDS_RESET]       = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
 };
 
 /* blink patterns: on time, off time, cycles (0-255) */
 #define BLINK_WAITING 50, 50, FOREVER
-#define BLINK_STOP 1, 1, 0
+#define BLINK_STOP 0, 0, 0
 #define BLINK_WARNING 10, 40, 3
+#define BLINK_MCR_WARNING 10, 40, FOREVER
 #define BLINK_ERROR 10, 40, 10
-#define BLINK_OK 250, 0, 2
+#define BLINK_OK 200, 0, 2
 #define BLINK_RESET 10, 0, 1
 #define BLINK_STEADY 250, 0, FOREVER
 #define BLINK_ONESHOT_MODS 200, 20, FOREVER
 #define BLINK_REVERSE_ONESHOT_MODS 20, 200, FOREVER
 #define BLINK_TOGGLED_MODS BLINK_STEADY
+#define BLINK_CHG_LAYER 250, 0, 1
 
 static void
 blink(uint8_t id, uint8_t on, uint8_t off, uint8_t cycles)
@@ -996,9 +1009,6 @@ blink(uint8_t id, uint8_t on, uint8_t off, uint8_t cycles)
 static void
 blink_mods(void)
 {
-    keyboard_set_leds(host_keyboard_leds());
-
-
     uint8_t m, wm;
     uint8_t hkbl = host_keyboard_leds();
     uint8_t alt = MOD_LALT, sft = MOD_LSFT, gui = MOD_LGUI, ctl = MOD_LCTL;
@@ -1058,6 +1068,9 @@ blink_mods(void)
 #define LINEBUFLEN 50
 #define HDRHEIGHT 3
 
+enum header {KEYPAIR_HDR, FN_ACT_HDR, THB_ACT_HDR,};
+enum print {PRINT_CANCEL, PRINT_START, PRINT_NEXT,};
+
 static uint8_t
 strtocodes (char *buf)
 {
@@ -1084,8 +1097,6 @@ strtocodes (char *buf)
     }
     return i;
 }
-
-enum header {KEYPAIR_HDR, FN_ACT_HDR, THB_ACT_HDR};
 
 static const char print_header[][HDRHEIGHT][LINEBUFLEN] PROGMEM = {
     [KEYPAIR_HDR] = {"* ************ finger chords **************\n",
@@ -1115,10 +1126,10 @@ fmt_keypair(uint8_t chrd, char *linebuf, char *modsbuf, uint8_t *len)
     eeprom_read_block(&kp, chrdmap + chrd, sizeof(keypair_t));
     strcpy_P(name_lo, (char *)(code_name + kp.code_lo));
     strcpy_P(name_up, (char *)(code_name + kp.code_up));
-    snprintf(linebuf, LINEBUFLEN, "* %x%x%x%x %c%c%c%c%#04x   %-9s %c%c%c%c%#04x   %-s\n",
+    snprintf(linebuf, LINEBUFLEN,
+             "* %x%x%x%x %c%c%c%c%#04x   %-9s %c%c%c%c%#04x   %-s\n",
              (chrd & 3<<6)>>6,
              (chrd & 3<<4)>>4,
-
              (chrd & 3<<2)>>2,
              (chrd & 3<<0)>>0,
              kp.mods_lo & Ag ? 'g' : '-',
@@ -1188,7 +1199,8 @@ fmt_fn_action(uint8_t chrd, char *linebuf, uint8_t *len)
         break;
     }
     row = (chrd & 3<<4)>>4;
-    snprintf(linebuf, LINEBUFLEN, "* %c %x%x%x%x %c%c%c%c %c%c%c%c %c %#04x %-s\n",
+    snprintf(linebuf, LINEBUFLEN,
+             "* %c %x%x%x%x %c%c%c%c %c%c%c%c %c %#04x %-s\n",
              chrd & 1<<6 ? '1' : '0',
              chrd & 1<<3 ? row : 0,
              chrd & 1<<2 ? row : 0,
@@ -1250,12 +1262,6 @@ fmt_thb_action(uint8_t chrd, char *linebuf, uint8_t *len)
              name);
     *len = strtocodes(linebuf);
 }
-
-enum print {
-    PRINT_CANCEL,
-    PRINT_START,
-    PRINT_NEXT,
-};
 
 static void
 print_chrdmaps(uint8_t cmd)
@@ -1372,27 +1378,8 @@ print_chrdmaps(uint8_t cmd)
 
 
 /*************************************************************
- * Collect and handle key chords
+ * Customization support: swap chord mappings
  *************************************************************/
-
-/*
- * Change bit patterns (representing keys pressed on columns) from two
- * bit per colum like d0c0b0a0, 0d0c0b0a, or ddccbbaa into one bit per
- * column like 00rrdcba.  The two rr bits represent the (single) row
- * the keys belonged to.
- */
-static uint8_t
-squeeze_chrd (uint8_t c)
-{
-    uint8_t even_bits, odd_bits, row;
-
-    even_bits = (c & 1) | (c & 1<<2)>>1 | (c & 1<<4)>>2 | (c & 1<<6)>>3;
-    odd_bits = (c & 1<<1)>>1 | (c & 1<<3)>>2 | (c & 1<<5)>>3 | (c & 1<<7)>>4;
-    row = (c>>6 | c>>4 | c>>2 | c) & 3;
-    if (even_bits && odd_bits && even_bits != odd_bits)
-        return 0;               /* no multi-row chords allowed here */
-    return even_bits | odd_bits | row<<4;
-}
 
 enum swap_state {
     IDLE = false,
@@ -1490,23 +1477,168 @@ swap_chrds(void)
     }
 }
 
+
+/*************************************************************
+ * Customization support: record and play macros
+ *************************************************************/
+
+static void
+emit_keycode(uint8_t weak_mods, uint8_t keycode, bool success_elsewhere);
+
+enum mcr_cmd {START_REC, COLLECT, EXEC, CANCEL_MCR,};
+enum mcr_chrd_direction {GET, PUT,};
+
+static void
+mcr_chrd(uint8_t direction, uint8_t mcr, uint8_t c,
+           uint8_t *mods, uint8_t *keycode)
+{
+    uint16_t mods0_word_idx, modsn_word_idx, modsn_word, modsn_nibble;
+    uint16_t keyn_word_idx, keyn_word, keyn_byte;
+    uint8_t mods0_nibble_idx, modsn_nibble_idx, keyn_byte_idx;
+
+    mods0_word_idx = MCR_LEN * MCR_MAX / 2;
+    mods0_nibble_idx = (MCR_LEN * MCR_MAX / 2) % 4;
+    modsn_word_idx = (mods0_word_idx * 4 +
+                      mods0_nibble_idx + (mcr * MCR_LEN) + c) / 4;
+    modsn_nibble_idx = (mods0_nibble_idx + (mcr * MCR_LEN) + c) % 4;
+    modsn_word = eeprom_read_word((uint16_t *)fn_chrdmap +
+                                  pgm_read_byte(fn_chrdmap_holes + modsn_word_idx));
+    keyn_word_idx = (mcr * MCR_LEN + c) / 2;
+    keyn_byte_idx = (mcr * MCR_LEN + c) % 2;
+    keyn_word = eeprom_read_word((uint16_t *)fn_chrdmap +
+                                 pgm_read_byte(fn_chrdmap_holes + keyn_word_idx));
+    switch (direction) {
+    case GET:
+        modsn_nibble = modsn_word & (0x0f<<modsn_nibble_idx * 4);
+        *mods = modsn_nibble>>modsn_nibble_idx * 4;
+        keyn_byte = keyn_word & (0xff<<keyn_byte_idx * 8);
+        *keycode = keyn_byte>>keyn_byte_idx * 8;
+        break;
+    case PUT:
+        modsn_word &= ~(0x0f<<modsn_nibble_idx * 4);
+        modsn_word |= *mods<<modsn_nibble_idx * 4;
+        eeprom_update_word((uint16_t *)fn_chrdmap +
+                           pgm_read_byte(fn_chrdmap_holes + modsn_word_idx),
+                           modsn_word);
+        keyn_word &= ~(0xff<<keyn_byte_idx * 8);
+        keyn_word |= *keycode<<keyn_byte_idx * 8;
+        eeprom_update_word((uint16_t *)fn_chrdmap +
+                           pgm_read_byte(fn_chrdmap_holes + keyn_word_idx),
+                           keyn_word);
+        break;
+    }
+}
+
+static bool
+mcr(uint8_t cmd, uint8_t keycode)
+{
+    static enum {RECORDING, IDLE,} state = IDLE;
+    static uint8_t k[MCR_LEN] = {0};
+    static uint8_t m[MCR_LEN] = {0};
+    static uint8_t idx = 0;
+    uint8_t i, fn_n = keycode - KC_FN0, mods = 0, kc;
+
+    switch (cmd) {
+    case START_REC:
+        state = RECORDING;
+        for (i = 0; i < MCR_LEN; i++) {
+            k[i] = 0;
+            m[i] = 0;
+        }
+        idx = 0;
+        blink(LEDS_RECORD_MCR, BLINK_WAITING);
+        return true;
+        break;
+    case COLLECT:
+        switch (state) {
+        case RECORDING:         /* add mods, keycode to new macro */
+            if (idx < MCR_LEN) {
+                mods = get_mods() | get_weak_mods();
+                if ((mods || keycode)) {
+                    m[idx] = MODS_TO_KEYPAIR_MODS(mods);
+                    k[idx] = keycode;
+                    idx++;
+                }
+            } else {
+                blink(LEDS_RECORD_MCR, BLINK_MCR_WARNING);
+            }
+            return true;
+            break;
+        case IDLE:
+            break;
+        }
+        break;
+    case EXEC:
+        switch (state) {
+        case IDLE:              /* play macro */
+            for (i = 0; i < MCR_LEN; i++) {
+                mcr_chrd(GET, fn_n, i, &mods, &kc);
+                if (kc || mods)
+                    emit_keycode(mods, kc, false);
+                else
+                    break;      /* for (i = 0; ... */
+            }
+            break;
+        case RECORDING:         /* store collected macro */
+            for (i = 0; i < MCR_LEN; i++)
+                mcr_chrd(PUT, fn_n, i, &m[i], &k[i]);
+            state = IDLE;
+            blink(LEDS_RECORD_MCR, BLINK_OK);
+            break;
+        }
+        break;
+    case CANCEL_MCR:
+        state = IDLE;
+        break;
+    }
+    return false;
+}
+
+
+/*************************************************************
+ * Collect and handle key chords
+ *************************************************************/
+
+/*
+ * Change bit patterns (representing keys pressed on columns) from two
+ * bit per colum like d0c0b0a0, 0d0c0b0a, or ddccbbaa into one bit per
+ * column like 00rrdcba.  The two rr bits represent the (single) row
+ * the keys belonged to.
+ */
+static uint8_t
+squeeze_chrd (uint8_t c)
+{
+    uint8_t even_bits, odd_bits, row;
+
+    even_bits = (c & 1) | (c & 1<<2)>>1 | (c & 1<<4)>>2 | (c & 1<<6)>>3;
+    odd_bits = (c & 1<<1)>>1 | (c & 1<<3)>>2 | (c & 1<<5)>>3 | (c & 1<<7)>>4;
+    row = (c>>6 | c>>4 | c>>2 | c) & 3;
+    if (even_bits && odd_bits && even_bits != odd_bits)
+        return 0;               /* no multi-row chords allowed here */
+    return even_bits | odd_bits | row<<4;
+}
+
 static uint8_t
 fn_chrdfunc(action_t a)
 {
     uint8_t func_id = a.func.opt, opt = a.func.id;
 
     switch (func_id) {
-    case SWITCH_LAYER:
+    case CHG_LAYER:
         return opt;            /* leave chord mode */
         break;
     case SWAP_CHRDS:
         swap_chrds();
+        break;
+    case MCR_RECORD:
+        mcr(START_REC, 0);
         break;
     case PRINT:
         print_chrdmaps(PRINT_START);
         break;
     case RESET:
         print_chrdmaps(PRINT_CANCEL);
+        mcr(CANCEL_MCR, 0);
         clear_keyboard();
         blink(LEDS_RESET, BLINK_RESET);
         update_leds();          /* preempt LED usage */
@@ -1514,6 +1646,26 @@ fn_chrdfunc(action_t a)
         break;
     }
     return false;
+}
+
+static void
+emit_keycode(uint8_t weak_mods, uint8_t keycode, bool success_elsewhere)
+{
+    bool collecting_mcr = false;
+
+    if (keycode >= KC_FN0 && keycode < KC_FN0 + MCR_MAX) {
+        mcr(EXEC, keycode);
+    } else {
+        add_weak_mods(weak_mods);
+        collecting_mcr = mcr(COLLECT, keycode);
+        add_key(keycode);
+        if (!(keycode | success_elsewhere |
+              get_weak_mods() | get_mods() | collecting_mcr))
+            blink(LEDS_NO_KEYCODE, BLINK_WARNING);
+        send_keyboard_report();
+    }
+    clear_keyboard_but_mods();
+    blink(LEDS_ALL_MODS, BLINK_STOP);
 }
 
 static uint8_t
@@ -1526,15 +1678,18 @@ emit_chrd(uint8_t thb_chrd, uint8_t fng_chrd)
 
     thb_state.code = pgm_read_word((uint16_t *)thb_chrdmap + thb_chrd);
     eeprom_read_block(&keypair, chrdmap + fng_chrd, sizeof(keypair_t));
-    if (thb_state.code == KC_NO) { /* plain finger chord from chrdmap */
+    if (thb_state.code == KC_NO) {
+        /* plain finger chord from chrdmap */
         weak_mods = KEYPAIR_MODS_TO_MODS(keypair.mods_lo);
         keycode = keypair.code_lo;
         predicted_swap_state = EXPECT_FNG_CHRD;
-    } else if (thb_state.code == THB_UP) { /* upper-level finger chord from chrdmap */
+    } else if (thb_state.code == THB_UP) {
+        /* upper-level finger chord from chrdmap */
         weak_mods = KEYPAIR_MODS_TO_MODS(keypair.mods_up);
         keycode = keypair.code_up;
         predicted_swap_state = EXPECT_FNG_CHRD;
-    } else if (thb_state.key.kind == ACT_MODS) { /* plain thumb chord from thb_chrdmap */
+    } else if (thb_state.key.kind == ACT_MODS) {
+        /* plain thumb chord from thb_chrdmap */
         weak_mods = thb_state.key.mods;
         keycode = thb_state.key.code;
         predicted_swap_state = IDLE;
@@ -1586,15 +1741,8 @@ emit_chrd(uint8_t thb_chrd, uint8_t fng_chrd)
     }
     switch (swap.state) {
     case IDLE:
-        if (!mods_tap_only) {
-            add_weak_mods(weak_mods);
-            add_key(keycode);
-            if (!(keycode | thb_func | get_weak_mods() | get_mods()))
-                blink(LEDS_NO_KEYCODE, BLINK_WARNING);
-            send_keyboard_report();
-            clear_keyboard_but_mods();
-            blink(LEDS_ALL_MODS, BLINK_STOP);
-        }
+        if (!mods_tap_only)
+            emit_keycode(weak_mods, keycode, thb_func);
         blink_mods();
         break;
     case EXPECT_FIRST_CHRD:
@@ -1669,16 +1817,21 @@ action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
                 fng_chrd |= row<<byte_pos;
                 break;
             }
+            case MCR_PLAY:      /* non-chord macro pad key */
+                mcr(EXEC, id);
+                break;
             }
         }
     } else {
         if (ready) {
-            if (func_id == SWITCH_LAYER) {
+            if (func_id == MCR_PLAY) {
+                /* ignored on key release */
+            } else if (func_id == CHG_LAYER) {
                 /* leave or keep out of chord mode */
                 layer = id;
                 layer_pending = true;
             } else if ((layer = emit_chrd(thb_chrd, fng_chrd))) {
-                /* any layer but L_DEFAULT */
+                /* any layer but L_DFLT */
                 layer_pending = true;
             }
             ready = false;
@@ -1691,6 +1844,7 @@ action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
             fng_chrd = 0;
             thb_chrd = 0;
             if (layer_pending) {         /* leave chord mode */
+                blink(LEDS_CHG_LAYER, BLINK_CHG_LAYER);
                 layer_move(layer);
                 layer_pending = false;
             }
@@ -1700,7 +1854,7 @@ action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
 
 
 /*************************************************************
- * TMK hooks and initialization functions
+ * TMK hook and initialization functions
  *************************************************************/
 void
 hook_early_init(void)

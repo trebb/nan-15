@@ -41,9 +41,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /* enable debug print */
-#undef NO_DEBUG
+/* #undef NO_DEBUG */
 
-#define DEBUG_ACTION
+/* #define DEBUG_ACTION */
 
 /* enable print */
 /* #undef NO_PRINT */
