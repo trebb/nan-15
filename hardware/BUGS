@@ -1,0 +1,9 @@
+BUGS
+
+- The pair of connector wire pads between main PCB and top plate near
+  R9 isn't aligned properly.
+
+- Some of the LED numbers on the top plate are being obscured by the
+  switches.
+
+- LED cathodes need to be marked more clearly.
