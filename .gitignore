@@ -16,6 +16,7 @@
 .dep
 \#*
 cflow-*.out
+chordmap.txt
 gh-pages/
 obj_*_lufa
 plot_files/

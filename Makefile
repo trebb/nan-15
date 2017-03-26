@@ -15,6 +15,7 @@ gh-pages:
 	cp hardware/bottom-plate/plot_files/bottom-plate.zip gh-pages/
 	cp hardware/bottom-plate/plot_files/bottom-plate.pdf gh-pages/
 	cp hardware/bottom-plate/plot_files/bottom-plate-brd.svg gh-pages/
+	cp firmware/chordmap.txt gh-pages/
 	echo '<h3>Generated files of <a href="https://github.com/trebb/nan-15">NaN-15</a></h3>' > gh-pages/index.html
 	ls gh-pages | \
 		grep -v index.html | \
