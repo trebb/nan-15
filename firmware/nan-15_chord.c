@@ -961,35 +961,60 @@ static const struct {
     uint8_t len;
     uint8_t leds[12];
 } ledsets[] PROGMEM = {
+    [LEDS_ALL_MODS]    = {.len = 7,  .leds = {2, 3, 4, 5, 9, 10, 11}},
+    [LEDS_ALT]         = {.len = 2,  .leds = {3, 10}},
+    [LEDS_CHG_LAYER]   = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
+    [LEDS_CTL]         = {.len = 2,  .leds = {4, 9}},
+    [LEDS_GUI]         = {.len = 2,  .leds = {2, 11}},
     [LEDS_NO_KEYCODE]  = {.len = 3,  .leds = {0, 1, 8}},
     [LEDS_NUM_LOCK]    = {.len = 1,  .leds = {6}},
+    [LEDS_PRINT]       = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
+    [LEDS_RECORD_MCR]  = {.len = 3,  .leds = {0, 1, 8}},
+    [LEDS_RESET]       = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
     [LEDS_SCROLL_LOCK] = {.len = 1,  .leds = {7}},
     [LEDS_SFT]         = {.len = 1,  .leds = {5}},
-    [LEDS_CTL]         = {.len = 2,  .leds = {4, 9}},
-    [LEDS_ALT]         = {.len = 2,  .leds = {3, 10}},
-    [LEDS_GUI]         = {.len = 2,  .leds = {2, 11}},
-    [LEDS_ALL_MODS]    = {.len = 7,  .leds = {2, 3, 4, 5, 9, 10, 11}},
-    [LEDS_CHG_LAYER]   = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
     [LEDS_SWAP_FIRST]  = {.len = 2,  .leds = {4, 9}},
     [LEDS_SWAP_SECOND] = {.len = 2,  .leds = {2, 11}},
-    [LEDS_RECORD_MCR]  = {.len = 3,  .leds = {0, 1, 8}},
-    [LEDS_PRINT]       = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
-    [LEDS_RESET]       = {.len = 12, .leds = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}},
 };
 
 /* blink patterns: on time, off time, cycles (0-255) */
-#define BLINK_WAITING 50, 50, FOREVER
-#define BLINK_STOP 0, 0, 0
-#define BLINK_WARNING 10, 40, 3
-#define BLINK_MCR_WARNING 10, 40, FOREVER
-#define BLINK_ERROR 10, 40, 10
-#define BLINK_OK 200, 0, 2
-#define BLINK_RESET 10, 0, 1
-#define BLINK_STEADY 250, 0, FOREVER
-#define BLINK_ONESHOT_MODS 200, 20, FOREVER
-#define BLINK_REVERSE_ONESHOT_MODS 20, 200, FOREVER
-#define BLINK_TOGGLED_MODS BLINK_STEADY
 #define BLINK_CHG_LAYER 250, 0, 1
+#define BLINK_ERROR 10, 40, 10
+#define BLINK_MCR_WARNING 10, 40, FOREVER
+#define BLINK_OK 200, 0, 2
+#define BLINK_ONESHOT_MODS 200, 20, FOREVER
+#define BLINK_RESET 10, 0, 1
+#define BLINK_REVERSE_ONESHOT_MODS 20, 200, FOREVER
+#define BLINK_STEADY 250, 0, FOREVER
+#define BLINK_STOP 0, 0, 0
+#define BLINK_TOGGLED_MODS BLINK_STEADY
+#define BLINK_WAITING 50, 50, FOREVER
+#define BLINK_WARNING 10, 40, 3
+
+/* LED signalling: LED set, blink pattern */
+#define CHG_LAYER_ON LEDS_CHG_LAYER, BLINK_CHG_LAYER
+#define NO_KEYCODE_ON LEDS_NO_KEYCODE, BLINK_WARNING
+#define NUM_LOCK_ON LEDS_NUM_LOCK, BLINK_STEADY
+#define ONESHOT_ALT_ON LEDS_ALT, BLINK_ONESHOT_MODS
+#define ONESHOT_CTL_ON LEDS_CTL, BLINK_ONESHOT_MODS
+#define ONESHOT_GUI_ON LEDS_GUI, BLINK_ONESHOT_MODS
+#define ONESHOT_SFT_ON LEDS_SFT, BLINK_ONESHOT_MODS
+#define ONESHOT_SFT_REVERSE_ON LEDS_SFT, BLINK_REVERSE_ONESHOT_MODS
+#define PRINT_ON LEDS_PRINT, BLINK_STEADY
+#define RECORD_MCR_OK_ON LEDS_RECORD_MCR, BLINK_OK
+#define RECORD_MCR_ON LEDS_RECORD_MCR, BLINK_WAITING
+#define RECORD_MCR_WARNING_ON LEDS_RECORD_MCR, BLINK_WARNING
+#define RESET_ON LEDS_RESET, BLINK_RESET
+#define SCROLL_LOCK_ON LEDS_SCROLL_LOCK, BLINK_STEADY
+#define SWAP_FIRST_ON LEDS_SWAP_FIRST, BLINK_WAITING
+#define SWAP_SECOND_ERROR_ON LEDS_SWAP_SECOND, BLINK_ERROR
+#define SWAP_SECOND_OK_ON LEDS_SWAP_SECOND, BLINK_OK
+#define SWAP_SECOND_ON LEDS_SWAP_SECOND, BLINK_WAITING
+#define TOGGLED_ALT_ON LEDS_ALT, BLINK_TOGGLED_MODS
+#define TOGGLED_CTL_ON LEDS_CTL, BLINK_TOGGLED_MODS
+#define TOGGLED_GUI_ON LEDS_GUI, BLINK_TOGGLED_MODS
+#define TOGGLED_SFT_ON LEDS_SFT, BLINK_TOGGLED_MODS
+#define OFF(LEDSET) (LEDS_##LEDSET), BLINK_STOP
 
 static void
 blink(uint8_t id, uint8_t on, uint8_t off, uint8_t cycles)
@@ -1021,44 +1046,44 @@ blink_mods(void)
     m = m>>4 | (m & 0xf);
     wm = wm>>4 | (wm & 0xf);
     if (m & alt)
-        blink(LEDS_ALT, BLINK_TOGGLED_MODS);
+        blink(TOGGLED_ALT_ON);
     else
-        blink(LEDS_ALT, BLINK_STOP);
+        blink(OFF(ALT));
     if (wm & alt)
-        blink(LEDS_ALT, BLINK_ONESHOT_MODS);
+        blink(ONESHOT_ALT_ON);
     if (m & gui)
-        blink(LEDS_GUI, BLINK_TOGGLED_MODS);
+        blink(TOGGLED_GUI_ON);
     else
-        blink(LEDS_GUI, BLINK_STOP);
+        blink(OFF(GUI));
     if (wm & gui)
-        blink(LEDS_GUI, BLINK_ONESHOT_MODS);
+        blink(ONESHOT_GUI_ON);
     if (m & ctl)
-        blink(LEDS_CTL, BLINK_TOGGLED_MODS);
+        blink(TOGGLED_GUI_ON);
     else
-        blink(LEDS_CTL, BLINK_STOP);
+        blink(OFF(CTL));
     if (wm & ctl)
-        blink(LEDS_CTL, BLINK_ONESHOT_MODS);
+        blink(ONESHOT_CTL_ON);
     if (((m & sft) && cpslck) || (!(m & sft) && !cpslck)) {
         if (wm & sft)
-            blink(LEDS_SFT, BLINK_ONESHOT_MODS);
+            blink(ONESHOT_SFT_ON);
         else
-            blink(LEDS_SFT, BLINK_STOP);
+            blink(OFF(SFT));
     } else if ((m & sft) && !cpslck) {
-        blink(LEDS_SFT, BLINK_TOGGLED_MODS);
+        blink(TOGGLED_SFT_ON);
     } else if (!(m & sft) && cpslck) {
         if (wm & sft)
-            blink(LEDS_SFT, BLINK_REVERSE_ONESHOT_MODS);
+            blink(ONESHOT_SFT_REVERSE_ON);
         else
-            blink(LEDS_SFT, BLINK_TOGGLED_MODS);
+            blink(TOGGLED_SFT_ON);
     }
     if (hkbl & (1<<USB_LED_NUM_LOCK))
-        blink(LEDS_NUM_LOCK, BLINK_STEADY);
+        blink(NUM_LOCK_ON);
     else
-        blink(LEDS_NUM_LOCK, BLINK_STOP);
+        blink(OFF(NUM_LOCK));
     if (hkbl & (1<<USB_LED_SCROLL_LOCK))
-        blink(LEDS_SCROLL_LOCK, BLINK_STEADY);
+        blink(SCROLL_LOCK_ON);
     else
-        blink(LEDS_SCROLL_LOCK, BLINK_STOP);
+        blink(OFF(SCROLL_LOCK));
 }
 
 
@@ -1296,7 +1321,7 @@ print_chrdmaps(uint8_t cmd)
     case PRINT_NEXT:
         switch (printing) {
         case PRINTING_LN:
-            blink(LEDS_PRINT, BLINK_STEADY);
+            blink(PRINT_ON);
             if (bufpos <= buflen) {
                 add_key(linebuf[bufpos]);
                 add_mods(modsbuf[bufpos]);
@@ -1372,7 +1397,7 @@ print_chrdmaps(uint8_t cmd)
             }
             break;
         case DONE:
-            blink(LEDS_PRINT, BLINK_STOP);
+            blink(OFF(PRINT));
             printing = IDLE;
             break;
         case IDLE:
@@ -1411,12 +1436,12 @@ swap_chrds(void)
     switch (swap.state) {
     case IDLE:
         swap.state = EXPECT_FIRST_CHRD;
-        blink(LEDS_SWAP_FIRST, BLINK_WAITING);
+        blink(SWAP_FIRST_ON);
         break;
     case EXPECT_FNG_CHRD:
     case EXPECT_FN_CHRD:
-        blink(LEDS_SWAP_FIRST, BLINK_STOP);
-        blink(LEDS_SWAP_SECOND, BLINK_WAITING);
+        blink(OFF(SWAP_FIRST));
+        blink(SWAP_SECOND_ON);
         break;
     case HAVE_FNG_CHRDS:
     {
@@ -1459,7 +1484,7 @@ swap_chrds(void)
         eeprom_update_block(&kpa, chrdmap + swap.chrd1, sizeof(keypair_t));
         eeprom_update_block(&kpb, chrdmap + swap.chrd2, sizeof(keypair_t));
         swap.state = IDLE;
-        blink(LEDS_SWAP_SECOND, BLINK_OK);
+        blink(SWAP_SECOND_OK_ON);
         break;
     }
     case HAVE_FN_CHRDS:
@@ -1471,14 +1496,14 @@ swap_chrds(void)
         eeprom_update_word((uint16_t *)fn_chrdmap + swap.chrd1, a2.code);
         eeprom_update_word((uint16_t *)fn_chrdmap + swap.chrd2, a1.code);
         swap.state = IDLE;
-        blink(LEDS_SWAP_SECOND, BLINK_OK);
+        blink(SWAP_SECOND_OK_ON);
         break;
     }
     case CANCEL:
     default:
         swap.state = IDLE;
-        blink(LEDS_SWAP_FIRST, BLINK_STOP);
-        blink(LEDS_SWAP_SECOND, BLINK_ERROR);
+        blink(OFF(SWAP_FIRST));
+        blink(SWAP_SECOND_ERROR_ON);
         break;
     }
 }
@@ -1552,7 +1577,7 @@ mcr(uint8_t cmd, uint8_t keycode)
             m[i] = 0;
         }
         idx = 0;
-        blink(LEDS_RECORD_MCR, BLINK_WAITING);
+        blink(RECORD_MCR_ON);
         return true;
         break;
     case COLLECT:
@@ -1566,7 +1591,7 @@ mcr(uint8_t cmd, uint8_t keycode)
                     idx++;
                 }
             } else {
-                blink(LEDS_RECORD_MCR, BLINK_MCR_WARNING);
+                blink(RECORD_MCR_WARNING_ON);
             }
             return true;
             break;
@@ -1589,7 +1614,7 @@ mcr(uint8_t cmd, uint8_t keycode)
             for (i = 0; i < MCR_LEN; i++)
                 mcr_chrd(PUT, fn_n, i, &m[i], &k[i]);
             state = IDLE;
-            blink(LEDS_RECORD_MCR, BLINK_OK);
+            blink(RECORD_MCR_OK_ON);
             break;
         }
         break;
@@ -1646,7 +1671,7 @@ fn_chrdfunc(action_t a)
         print_chrdmaps(PRINT_CANCEL);
         mcr(CANCEL_MCR, 0);
         clear_keyboard();
-        blink(LEDS_RESET, BLINK_RESET);
+        blink(RESET_ON);
         update_leds();          /* preempt LED usage */
         wait_ms(10);
         break;
@@ -1667,11 +1692,11 @@ emit_keycode(uint8_t weak_mods, uint8_t keycode, bool success_elsewhere)
         add_key(keycode);
         if (!(keycode | success_elsewhere |
               get_weak_mods() | get_mods() | collecting_mcr))
-            blink(LEDS_NO_KEYCODE, BLINK_WARNING);
+            blink(NO_KEYCODE_ON);
         send_keyboard_report();
     }
     clear_keyboard_but_mods();
-    blink(LEDS_ALL_MODS, BLINK_STOP);
+    blink(OFF(ALL_MODS));
 }
 
 static uint8_t
@@ -1850,7 +1875,7 @@ action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
             fng_chrd = 0;
             thb_chrd = 0;
             if (layer_pending) {         /* leave chord mode */
-                blink(LEDS_CHG_LAYER, BLINK_CHG_LAYER);
+                blink(CHG_LAYER_ON);
                 layer_move(layer);
                 layer_pending = false;
             }
@@ -1873,7 +1898,7 @@ void
 hook_late_init(void)
 {
     led(8, OFF);
-    blink(LEDS_RESET, BLINK_RESET);
+    blink(RESET_ON);
 }
 
 void
