@@ -14,10 +14,95 @@ import (
 	"unicode"
 )
 
-var outFilename = flag.String("o", "chordmap.svg", "output SVG filename (\"-\" for stdout)")
-var inFilename = flag.String("i", "chordmap.txt", "input filename (\"-\" for stdin)")
-var width = flag.Int("w", 200, "width in mm")
-var height = flag.Int("h", 290, "height in mm")
+var (
+	outFilename = flag.String("o", "chordmap.svg", "output SVG filename (\"-\" for stdout)")
+	inFilename  = flag.String("i", "chordmap.txt", "input filename (\"-\" for stdin)")
+	width       = flag.Int("w", 200, "width in mm")
+	height      = flag.Int("h", 290, "height in mm")
+)
+
+var (
+	translatableNames = map[string]string{
+		"bspace": "⌫",
+		"down":   "▽",
+		"left":   "◁",
+		"right":  "▷",
+		"space":  "␣",
+		"up":     "△",
+	}
+	specialKeys = map[string]string{
+		"appl":      "Appl",
+		"capslock":  "Caps Lock",
+		"change lr": "change layer",
+		"delete":    "Delete",
+		"end":       "End",
+		"enter":     "Enter",
+		"escape":    "Escape",
+		"f1":        "F1",
+		"f10":       "F10",
+		"f11":       "F11",
+		"f12":       "F12",
+		"f2":        "F2",
+		"f3":        "F3",
+		"f4":        "F4",
+		"f5":        "F5",
+		"f6":        "F6",
+		"f7":        "F7",
+		"f8":        "F8",
+		"f9":        "F9",
+		"home":      "Home",
+		"insert":    "Insert",
+		"macro 0":   "store/play macro 0",
+		"macro 1":   "store/play macro 1",
+		"macro 2":   "store/play macro 2",
+		"macro 3":   "store/play macro 3",
+		"macro 4":   "store/play macro 4",
+		"macro 5":   "store/play macro 5",
+		"macro 6":   "store/play macro 6",
+		"macro 7":   "store/play macro 7",
+		"numlock":   "Num Lock",
+		"pgdown":    "Page Down",
+		"pgup":      "Page Up",
+		"prnt chds": "type chordmap",
+		"rec macro": "start macro record",
+		"reset kbd": "keyboard reset",
+		"scrolllck": "Scroll Lock",
+		"swap chds": "start chord swap",
+		"tab":       "Tab",
+	}
+	mapLegend = []chordPad{
+		{
+			section: finger,
+			legend:  "red 1",
+		}, {
+			section:     finger,
+			legend:      "red 2",
+			header:      "swappable",
+			headerStyle: padHeaderStyle + ";text-anchor:middle",
+		}, {
+			section: fn,
+			legend:  "green 1",
+		}, {
+			section:     fn,
+			legend:      "green 2",
+			header:      "swappable",
+			headerStyle: padHeaderStyle + ";text-anchor:middle",
+		}, {
+			section: finger,
+			legend:  "red 1",
+		}, {
+			section:     fn,
+			legend:      "green 2",
+			header:      "unswappable",
+			headerStyle: padHeaderStyle + ";text-anchor:middle",
+		}, {
+			section:     thumb,
+			legend:      "grey",
+			header:      "immutable",
+			headerStyle: padHeaderStyle + ";text-anchor:left",
+		},
+	}
+)
 
 const (
 	keySize        = 450
@@ -28,15 +113,18 @@ const (
 	padSep         = 600
 	frameThickness = 120
 	frameSize      = padSize + frameThickness + 2*keySep
+	colorRed       = "darkred"
+	colorGreen     = "olivedrab"
+	colorGrey      = "dimgrey"
 	frameStyle     = "stroke:lightgray;fill:white"
 	pressStyle     = "stroke:gray;stroke-width:30;fill:gainsboro"
 	relStyle       = "stroke:lightgray;stroke-width:50;fill:white"
 	legendStyle    = "text-anchor:middle;font-family:'DejaVu Sans'"
+	headerStyle    = "text-anchor:left;font-family:'DejaVu Sans'" +
+		";dominant-baseline:bottom;fill:black"
+	padHeaderStyle = "font-family:'DejaVu Sans';font-size:400px;font-weight:bold" +
+		";dominant-baseline:bottom;fill:black"
 )
-
-type chord [5][4]bool
-
-type section int
 
 const (
 	thumb = iota
@@ -44,34 +132,33 @@ const (
 	fn
 )
 
-type chordPad struct {
-	chord            chord
-	section          section
-	legend           string
-	legendIsChar     bool
-	modifiers        []string
-	modifierDuration string
-}
-
-type formatting struct{}
-
-type op int
-
-const (
-	newSection = iota
-	newPage
+type (
+	chord    [5][4]bool
+	section  int
+	chordPad struct {
+		chord            chord
+		section          section
+		legend           string
+		legendIsChar     bool
+		modifiers        []string
+		modifierDuration string
+		header           string
+		headerStyle      string
+	}
+	sectionHeader struct{ header string }
+	newPage       struct{}
+	chordMap      struct {
+		outFilename          string
+		outFile              *os.File
+		canvas               *svg.SVG
+		width, height, xPads int
+		x, y                 int
+		nPage, nPad          int
+		chordPads            chan interface{}
+		done                 chan struct{}
+		yPageOffset          int
+	}
 )
-
-type chordMap struct {
-	outFilename          string
-	outFile              *os.File
-	canvas               *svg.SVG
-	width, height, xPads int
-	nPage, nPad          int
-	chordPads            chan interface{}
-	done                 chan struct{}
-	yPageOffset          int
-}
 
 func nextFilename(old string) string {
 	fnRx := regexp.MustCompile(`(.*?)([0-9]*)\.([a-z]*)`)
@@ -83,7 +170,7 @@ func nextFilename(old string) string {
 
 func (cm *chordMap) newSVG() {
 	cm.nPad = 0
-	cm.yPageOffset = 0
+	cm.yPageOffset = pageMargin
 	cm.canvas = svg.New(cm.outFile)
 	cm.canvas.StartviewUnit(cm.width, cm.height, "mm", 0, 0, cm.width*100, cm.height*100)
 	cm.canvas.Title(fmt.Sprintf("NaN-15 chordmap (p. %d)", cm.nPage))
@@ -107,7 +194,7 @@ func (cm *chordMap) switchOutFile() {
 
 func newChordMap() (cm chordMap) {
 	cm.width, cm.height = *width, *height
-	cm.outFilename = *outFilename
+	cm.outFilename = nextFilename(*outFilename)
 	cm.xPads = (100*cm.width - 2*pageMargin + padSep) / (padSize + padSep)
 	cm.done = make(chan struct{})
 	cm.chordPads = make(chan interface{})
@@ -124,27 +211,127 @@ func newChordMap() (cm chordMap) {
 		}
 		cm.newSVG()
 		for cp := range cm.chordPads {
-			switch x := cp.(type) {
+			switch t := cp.(type) {
 			case chordPad:
-				if cm.chordPad(x) {
+				if cm.chordPad(t) {
 				} else {
 					cm.switchOutFile()
-					cm.chordPad(x)
+					cm.chordPad(t)
 				}
-			case op:
-				switch x {
-				case newSection:
-					cm.nPad += (cm.xPads - cm.nPad%cm.xPads) % cm.xPads
-					cm.yPageOffset += padSep
-				case newPage:
+			case sectionHeader:
+				if cm.sectionHeader(t) {
+				} else {
 					cm.switchOutFile()
+					cm.sectionHeader(t)
 				}
+			case newPage:
+				cm.y = 0
+				cm.switchOutFile()
 			}
 		}
 		cm.canvas.End()
 		cm.done <- struct{}{}
 	}()
 	return
+}
+
+func (cm *chordMap) sectionHeader(h sectionHeader) bool {
+	if cm.y+2*(padSize+pageMargin) > cm.height*100 {
+		cm.y = 0
+		return false
+	}
+
+	cm.yPageOffset += padSep
+	remainder := (cm.xPads - cm.nPad%cm.xPads) % cm.xPads
+	cm.nPad += remainder
+	if remainder > 0 {
+		cm.yPageOffset += padSize+padSep
+	}
+	cm.canvas.Text(pageMargin, cm.y+cm.yPageOffset, h.header,
+		headerStyle+fmt.Sprintf(";font-size:%dpx", keySize))
+	return true
+}	
+
+func (cm *chordMap) chordPad(cp chordPad) bool {
+	xPad := cm.nPad % cm.xPads
+	yPad := cm.nPad / cm.xPads
+
+	var keyState, legendColor string
+	cm.x = pageMargin + xPad*(padSize+padSep)
+	cm.y = pageMargin + yPad*(padSize+padSep) + cm.yPageOffset
+	if cm.y+padSize+pageMargin > cm.height*100 {
+		return false
+	}
+	xFrame := cm.x - frameThickness/2 - keySep
+	yFrame := cm.y - frameThickness/2 - keySep
+	switch cp.section {
+	case finger:
+		legendColor = colorRed
+	case fn:
+		legendColor = colorGreen
+	case thumb:
+		legendColor = colorGrey
+	}
+	fc, tc := flatChord(cp.chord)
+	cm.canvas.Group(fmt.Sprintf("title=\"%d%d%d%d %d%d%d\"",
+		fc[0], fc[1], fc[2], fc[3], tc[0], tc[1], tc[2]))
+	cm.canvas.Roundrect(xFrame, yFrame, frameSize, frameSize, keyradius, keyradius,
+		frameStyle+fmt.Sprintf(";stroke-width:%d", frameThickness))
+	for row := 0; row < 4; row++ {
+		for col, keycol := 0, 0; keycol < 4; col, keycol = col+1, keycol+1 {
+			if cp.chord[row+1][col] {
+				keyState = pressStyle
+			} else {
+				keyState = relStyle
+			}
+			if row == 3 && col == 1 {
+				cm.canvas.Roundrect(cm.x+keycol*(keySize+keySep), cm.y+row*(keySize+keySep),
+					2*keySize+keySep, keySize, keyradius, keyradius, keyState)
+				keycol++
+			} else {
+				cm.canvas.Roundrect(cm.x+keycol*(keySize+keySep), cm.y+row*(keySize+keySep),
+					keySize, keySize, keyradius, keyradius, keyState)
+			}
+		}
+	}
+	nMods := len(cp.modifiers)
+	if cp.legendIsChar {
+		cm.canvas.Text(cm.x+padSize/2, cm.y+padSize*3/4, cp.legend,
+			legendStyle+fmt.Sprintf(";font-size:%dpx;font-weight:bold"+
+				";fill-opacity:0.1;fill:%s;stroke:%s;stroke-width:%dpx",
+				padSize-keySize, legendColor, legendColor, keySep/3))
+	} else if nMods == 0 {
+		s := strings.SplitN(cp.legend, " ", 3)
+		nParts := len(s)
+		for i, part := range s {
+			yOffset := keySize / 2 * (2*i - nParts + 1)
+			cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, part,
+				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
+					keySize, legendColor))
+		}
+	} else if cp.modifierDuration != "" {
+		var (
+			i   int
+			mod string
+		)
+		for i, mod = range cp.modifiers {
+			yOffset := keySize / 2 * (2*i - nMods)
+			cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, strings.Title(mod),
+				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
+					keySize, legendColor))
+		}
+		yOffset := keySize / 2 * (2*(i+1) - nMods)
+		cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, cp.modifierDuration,
+			legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
+				keySize, legendColor))
+	}
+	if cp.header != "" {
+		cm.canvas.Text(cm.x-padSep/2, cm.y+padSize, cp.header, cp.headerStyle)
+	}
+
+	cm.canvas.Gend()
+	cm.nPad++
+	return true
 }
 
 func (cm *chordMap) put(cp interface{}) {
@@ -163,54 +350,6 @@ func main() {
 			log.Fatal(err)
 		}
 		defer inFile.Close()
-	}
-	specialKeys := map[string]bool{
-		"appl":      true,
-		"capslock":  true,
-		"change lr": true,
-		"delete":    true,
-		"end":       true,
-		"enter":     true,
-		"escape":    true,
-		"f1":        true,
-		"f10":       true,
-		"f11":       true,
-		"f12":       true,
-		"f2":        true,
-		"f3":        true,
-		"f4":        true,
-		"f5":        true,
-		"f6":        true,
-		"f7":        true,
-		"f8":        true,
-		"f9":        true,
-		"home":      true,
-		"insert":    true,
-		"macro 0":   true,
-		"macro 1":   true,
-		"macro 2":   true,
-		"macro 3":   true,
-		"macro 4":   true,
-		"macro 5":   true,
-		"macro 6":   true,
-		"macro 7":   true,
-		"numlock":   true,
-		"pgdown":    true,
-		"pgup":      true,
-		"prnt chds": true,
-		"rec macro": true,
-		"reset kbd": true,
-		"scrolllck": true,
-		"swap chds": true,
-		"tab":       true,
-	}
-	translatableNames := map[string]string{
-		"bspace": "⌫",
-		"down":   "▽",
-		"left":   "◁",
-		"right":  "▷",
-		"space":  "␣",
-		"up":     "△",
 	}
 	var chordPads []chordPad
 	scanner := bufio.NewScanner(inFile)
@@ -311,25 +450,33 @@ func main() {
 	sort.Stable(byAlphabet(chordPads))
 	sort.Stable(byCategory(chordPads))
 	sort.Stable(byLen(chordPads))
-
+	cm.put(sectionHeader{header: "Simple Chords"})
 	for _, cp := range chordPads {
-		_, ok := specialKeys[cp.legend]
-		if ok || cp.legendIsChar {
+		l, ok := specialKeys[cp.legend]
+		if ok {
+			cp.legend = l
+			cm.put(cp)
+		} else if cp.legendIsChar {
 			cm.put(cp)
 		}
 	}
-	cm.put(op(newSection))
+	cm.put(sectionHeader{header: "Modifiers"})
 	for _, cp := range chordPads {
 		if cp.legend == "modifiers" {
 			cm.put(cp)
 		}
 	}
-	cm.put(op(newPage))
+	cm.put(newPage{})
+	cm.put(sectionHeader{header: "Unused Chords"})
 	for _, cp := range chordPads {
 		if cp.legend == "no" {
 			cp.legend = "[empty]"
 			cm.put(cp)
 		}
+	}
+	cm.put(sectionHeader{header: "Customization"})
+	for _, cp := range mapLegend {
+		cm.put(cp)
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
@@ -338,9 +485,11 @@ func main() {
 	<-cm.done
 }
 
-type byAlphabet []chordPad
-type byCategory []chordPad
-type byLen []chordPad
+type (
+	byAlphabet []chordPad
+	byCategory []chordPad
+	byLen      []chordPad
+)
 
 func (p byAlphabet) Len() int { return len(p) }
 func (p byAlphabet) Less(i, j int) bool {
@@ -385,75 +534,4 @@ func flatChord(c chord) (fc [4]int, tc [3]int) {
 	return
 }
 
-func (cm *chordMap) chordPad(cp chordPad) bool {
-	xPad := cm.nPad % cm.xPads
-	yPad := cm.nPad / cm.xPads
 
-	var keyState, legendColor string
-	x := pageMargin + xPad*(padSize+padSep)
-	y := pageMargin + yPad*(padSize+padSep) + cm.yPageOffset
-	if y+padSize+pageMargin > cm.height*100 {
-		return false
-	}
-	xFrame := x - frameThickness/2 - keySep
-	yFrame := y - frameThickness/2 - keySep
-	switch cp.section {
-	case finger:
-		legendColor = "darkred"
-	case fn:
-		legendColor = "olivedrab"
-	case thumb:
-		legendColor = "dimgray"
-	}
-	fc, tc := flatChord(cp.chord)
-	cm.canvas.Group(fmt.Sprintf("title=\"%d%d%d%d %d%d%d\"",
-		fc[0], fc[1], fc[2], fc[3], tc[0], tc[1], tc[2]))
-	cm.canvas.Roundrect(xFrame, yFrame, frameSize, frameSize, keyradius, keyradius,
-		frameStyle+fmt.Sprintf(";stroke-width:%d", frameThickness))
-	for row := 0; row < 4; row++ {
-		for col, keycol := 0, 0; keycol < 4; col, keycol = col+1, keycol+1 {
-			if cp.chord[row+1][col] {
-				keyState = pressStyle
-			} else {
-				keyState = relStyle
-			}
-			if row == 3 && col == 1 {
-				cm.canvas.Roundrect(x+keycol*(keySize+keySep), y+row*(keySize+keySep),
-					2*keySize+keySep, keySize, keyradius, keyradius, keyState)
-				keycol++
-			} else {
-				cm.canvas.Roundrect(x+keycol*(keySize+keySep), y+row*(keySize+keySep),
-					keySize, keySize, keyradius, keyradius, keyState)
-			}
-		}
-	}
-	nMods := len(cp.modifiers)
-	if cp.legendIsChar {
-		cm.canvas.Text(x+padSize/2, y+padSize*3/4, cp.legend,
-			legendStyle+fmt.Sprintf(
-				";font-size:%dpx;font-weight:bold;fill-opacity:0.1;fill:%s;stroke:%s;stroke-width:%dpx",
-				padSize-keySize, legendColor, legendColor, keySep/3))
-	} else if nMods == 0 {
-		cm.canvas.Text(x+padSize/2, y+padSize/2, strings.Title(cp.legend),
-			legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
-				keySize, legendColor))
-	} else if cp.modifierDuration != "" {
-		var (
-			i   int
-			mod string
-		)
-		for i, mod = range cp.modifiers {
-			yOffset := keySize / 2 * (2*i - nMods)
-			cm.canvas.Text(x+padSize/2, y+padSize/2+yOffset, strings.Title(mod),
-				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
-					keySize, legendColor))
-		}
-		yOffset := keySize / 2 * (2*(i+1) - nMods)
-		cm.canvas.Text(x+padSize/2, y+padSize/2+yOffset, cp.modifierDuration,
-			legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
-				keySize, legendColor))
-	}
-	cm.canvas.Gend()
-	cm.nPad++
-	return true
-}
