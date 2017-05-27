@@ -975,6 +975,9 @@ static const struct {
     [LEDS_SFT]         = {.len = 1,  .leds = {5}},
     [LEDS_SWAP_FIRST]  = {.len = 2,  .leds = {4, 9}},
     [LEDS_SWAP_SECOND] = {.len = 2,  .leds = {2, 11}},
+    /* not used here; for documentation:
+       [LEDS_INIT]     = {.len = 1,  .leds = {8}},
+    */
 };
 
 /* blink patterns: on time, off time, cycles (0-255) */
@@ -987,34 +990,36 @@ static const struct {
 #define BLINK_REVERSE_ONESHOT_MODS 20, 200, FOREVER
 #define BLINK_STEADY 250, 0, FOREVER
 #define BLINK_STOP 0, 0, 0
-#define BLINK_TOGGLED_MODS BLINK_STEADY
+#define BLINK_TOGGLED_MODS 250, 0, FOREVER
 #define BLINK_WAITING 50, 50, FOREVER
 #define BLINK_WARNING 10, 40, 3
 
 /* LED signalling: LED set, blink pattern */
-#define CHG_LAYER_ON LEDS_CHG_LAYER, BLINK_CHG_LAYER
-#define NO_KEYCODE_ON LEDS_NO_KEYCODE, BLINK_WARNING
-#define NUM_LOCK_ON LEDS_NUM_LOCK, BLINK_STEADY
-#define ONESHOT_ALT_ON LEDS_ALT, BLINK_ONESHOT_MODS
-#define ONESHOT_CTL_ON LEDS_CTL, BLINK_ONESHOT_MODS
-#define ONESHOT_GUI_ON LEDS_GUI, BLINK_ONESHOT_MODS
-#define ONESHOT_SFT_ON LEDS_SFT, BLINK_ONESHOT_MODS
-#define ONESHOT_SFT_REVERSE_ON LEDS_SFT, BLINK_REVERSE_ONESHOT_MODS
-#define PRINT_ON LEDS_PRINT, BLINK_STEADY
-#define RECORD_MCR_OK_ON LEDS_RECORD_MCR, BLINK_OK
-#define RECORD_MCR_ON LEDS_RECORD_MCR, BLINK_WAITING
-#define RECORD_MCR_WARNING_ON LEDS_RECORD_MCR, BLINK_WARNING
-#define RESET_ON LEDS_RESET, BLINK_RESET
-#define SCROLL_LOCK_ON LEDS_SCROLL_LOCK, BLINK_STEADY
-#define SWAP_FIRST_ON LEDS_SWAP_FIRST, BLINK_WAITING
-#define SWAP_SECOND_ERROR_ON LEDS_SWAP_SECOND, BLINK_ERROR
-#define SWAP_SECOND_OK_ON LEDS_SWAP_SECOND, BLINK_OK
-#define SWAP_SECOND_ON LEDS_SWAP_SECOND, BLINK_WAITING
-#define TOGGLED_ALT_ON LEDS_ALT, BLINK_TOGGLED_MODS
-#define TOGGLED_CTL_ON LEDS_CTL, BLINK_TOGGLED_MODS
-#define TOGGLED_GUI_ON LEDS_GUI, BLINK_TOGGLED_MODS
-#define TOGGLED_SFT_ON LEDS_SFT, BLINK_TOGGLED_MODS
+#define CHG_LAYER_ON LEDS_CHG_LAYER, BLINK_CHG_LAYER /* Switching layer */
+#define NO_KEYCODE_ON LEDS_NO_KEYCODE, BLINK_WARNING /* Unmapped chord */
+#define NUM_LOCK_ON LEDS_NUM_LOCK, BLINK_STEADY      /* Num Lock */
+#define ONESHOT_ALT_ON LEDS_ALT, BLINK_ONESHOT_MODS  /* Mod: ALT, sticky */
+#define ONESHOT_CTL_ON LEDS_CTL, BLINK_ONESHOT_MODS  /* Mod: CTRL, sticky */
+#define ONESHOT_GUI_ON LEDS_GUI, BLINK_ONESHOT_MODS  /* Mod: GUI, sticky */
+#define ONESHOT_SFT_ON LEDS_SFT, BLINK_ONESHOT_MODS  /* Mod: SHIFT, sticky */
+#define ONESHOT_SFT_REVERSE_ON LEDS_SFT, BLINK_REVERSE_ONESHOT_MODS /* Mod: unSHIFT */
+#define PRINT_ON LEDS_PRINT, BLINK_STEADY /* Typing chordmap */
+#define RECORD_MCR_OK_ON LEDS_RECORD_MCR, BLINK_OK /* Macro: done */
+#define RECORD_MCR_ON LEDS_RECORD_MCR, BLINK_WAITING /* Macro: recording */
+#define RECORD_MCR_WARNING_ON LEDS_RECORD_MCR, BLINK_WARNING /* Macro: too long */
+#define RESET_ON LEDS_RESET, BLINK_RESET                     /* Keyboard reset */
+#define SCROLL_LOCK_ON LEDS_SCROLL_LOCK, BLINK_STEADY        /* Scroll Lock */
+#define SWAP_FIRST_ON LEDS_SWAP_FIRST, BLINK_WAITING         /* Swap: chord A? */
+#define SWAP_SECOND_ERROR_ON LEDS_SWAP_SECOND, BLINK_ERROR   /* Swap: rejected */
+#define SWAP_SECOND_OK_ON LEDS_SWAP_SECOND, BLINK_OK         /* Swap: done */
+#define SWAP_SECOND_ON LEDS_SWAP_SECOND, BLINK_WAITING       /* Swap: chord B? */
+#define TOGGLED_ALT_ON LEDS_ALT, BLINK_TOGGLED_MODS          /* Mod: ALT */
+#define TOGGLED_CTL_ON LEDS_CTL, BLINK_TOGGLED_MODS          /* Mod: CTRL */
+#define TOGGLED_GUI_ON LEDS_GUI, BLINK_TOGGLED_MODS          /* Mod: GUI */
+#define TOGGLED_SFT_ON LEDS_SFT, BLINK_TOGGLED_MODS          /* Mod: SHIFT */
 #define OFF(LEDSET) (LEDS_##LEDSET), BLINK_STOP
+/* not used here; for documentation: */
+#define INIT_KBD_ON LEDS_INIT, BLINK_STEADY /* Keyboard start up */
 
 static void
 blink(uint8_t id, uint8_t on, uint8_t off, uint8_t cycles)
