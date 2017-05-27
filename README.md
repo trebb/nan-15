@@ -64,11 +64,23 @@ macro pad.
 Both chordmap customizations and macro definitions __persist through
 power cycles__.
 
+
+Self-Documentation
+------------------
+
 The keyboard is able to __print__ its current chordmap tables by
 "typing" them to the host computer.  Depending on the host computer's
-keymap, the output of this operation may appear a bit mangled.
+keymap, the output of this operation may appear a bit mangled
 ([Example, affected by QUERTZ layout
-setting](https://trebb.github.io/nan-15/chordmap.txt))
+setting](https://trebb.github.io/nan-15/chordmap.txt)).
+
+See ./firmware/chordmap/ for a tool that converts the textual chordmap
+into a graphical representation (Example: [page
+1](https://trebb.github.io/nan-15/default-chordmap1.svg), [page
+2](https://trebb.github.io/nan-15/default-chordmap2.svg)), and for
+a similar tool that extracts documentation of the [keyboard
+LEDs](https://trebb.github.io/nan-15/leds.svg) from the firmware
+source code.
 
 
 Hardware
