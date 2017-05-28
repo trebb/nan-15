@@ -1,4 +1,4 @@
-Building firmware .hex and .eep files:
+Build firmware .hex and .eep files:
 
 $ make KEYMAP=test all
   or
@@ -17,3 +17,9 @@ $ make KEYMAP=test dfu
   or
 $ make KEYMAP=chord dfu
 $ make KEYMAP=chord dfu-ee
+
+
+Generate keyboard documentation:
+
+$ cd cheatsheet-generator
+$ make

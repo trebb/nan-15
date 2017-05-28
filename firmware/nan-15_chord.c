@@ -940,6 +940,8 @@ update_leds(void)
     }
 }
 
+/* Subsets of the LEDs */
+/* These are parsed by the cheatsheet generator. */
 enum ledset_id {
     LEDS_NO_KEYCODE,
     LEDS_NUM_LOCK,
@@ -981,6 +983,7 @@ static const struct {
 };
 
 /* blink patterns: on time, off time, cycles (0-255) */
+/* These are parsed by the cheatsheet generator. */
 #define BLINK_CHG_LAYER 250, 0, 1
 #define BLINK_ERROR 10, 40, 10
 #define BLINK_MCR_WARNING 10, 40, FOREVER
@@ -994,7 +997,8 @@ static const struct {
 #define BLINK_WAITING 50, 50, FOREVER
 #define BLINK_WARNING 10, 40, 3
 
-/* LED signalling: LED set, blink pattern */
+/* LED signalling: LED set, blink pattern  */
+/* The trailing comments are extracted by the cheatsheet generator. */
 #define CHG_LAYER_ON LEDS_CHG_LAYER, BLINK_CHG_LAYER /* Switching layer */
 #define NO_KEYCODE_ON LEDS_NO_KEYCODE, BLINK_WARNING /* Unmapped chord */
 #define NUM_LOCK_ON LEDS_NUM_LOCK, BLINK_STEADY      /* Num Lock */
