@@ -23,3 +23,13 @@ Generate keyboard documentation:
 
 $ cd cheatsheet-generator
 $ make
+
+The chordmap cheatsheet is genereated from the textual represention in
+./cheatsheet-generator/chordmap.txt.  To create a fresh chordmap.txt
+reflecting the current customization state of the keyboard, invoke
+
+$ cat > chordmap.txt
+
+On the keyboard, press the appropriate chord to initiate chordmap
+printing and wait for it to finish, then press Control-C to exit the
+command.
