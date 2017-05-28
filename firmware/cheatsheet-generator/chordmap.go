@@ -31,9 +31,13 @@ var (
 		"up":     "△",
 	}
 	specialKeys = map[string]string{
+		"again":     "Again",
 		"appl":      "Appl",
 		"capslock":  "Caps Lock",
 		"change lr": "change layer",
+		"copy":      "Copy",
+		"copz":      "Copy",
+		"cut":       "Cut",
 		"delete":    "Delete",
 		"end":       "End",
 		"enter":     "Enter",
@@ -42,7 +46,19 @@ var (
 		"f10":       "F10",
 		"f11":       "F11",
 		"f12":       "F12",
+		"f13":       "F13",
+		"f14":       "F14",
+		"f15":       "F15",
+		"f16":       "F16",
+		"f17":       "F17",
+		"f18":       "F18",
+		"f19":       "F19",
 		"f2":        "F2",
+		"f20":       "F20",
+		"f21":       "F21",
+		"f22":       "F22",
+		"f23":       "F23",
+		"f24":       "F24",
 		"f3":        "F3",
 		"f4":        "F4",
 		"f5":        "F5",
@@ -50,8 +66,46 @@ var (
 		"f7":        "F7",
 		"f8":        "F8",
 		"f9":        "F9",
+		"find":      "Find",
+		"help":      "Help",
 		"home":      "Home",
 		"insert":    "Insert",
+		"int1":      "Intl 1",
+		"int2":      "Intl 2",
+		"int3":      "Intl 3",
+		"int4":      "Intl 4",
+		"int5":      "Intl 5",
+		"int6":      "Intl 6",
+		"int7":      "Intl 7",
+		"int8":      "Intl 8",
+		"int9":      "Intl 9",
+		"kp 0":      "Keypad 0",
+		"kp 1":      "Keypad 1",
+		"kp 2":      "Keypad 2",
+		"kp 3":      "Keypad 3",
+		"kp 4":      "Keypad 4",
+		"kp 5":      "Keypad 5",
+		"kp 6":      "Keypad 6",
+		"kp 7":      "Keypad 7",
+		"kp 8":      "Keypad 8",
+		"kp 9":      "Keypad 9",
+		"kp aster":  "Keypad *",
+		"kp comma":  "Keypad Comma",
+		"kp dot":    "Keypad Dot",
+		"kp enter":  "Keypad Enter",
+		"kp equal":  "Keypad =",
+		"kp minus":  "Keypad -",
+		"kp plus":   "Keypad +",
+		"kp slash":  "Keypad /",
+		"lang1":     "Lang 1",
+		"lang2":     "Lang 2",
+		"lang3":     "Lang 3",
+		"lang4":     "Lang 4",
+		"lang5":     "Lang 5",
+		"lang6":     "Lang 6",
+		"lang7":     "Lang 7",
+		"lang8":     "Lang 8",
+		"lang9":     "Lang 9",
 		"macro 0":   "store/play macro 0",
 		"macro 1":   "store/play macro 1",
 		"macro 2":   "store/play macro 2",
@@ -60,15 +114,25 @@ var (
 		"macro 5":   "store/play macro 5",
 		"macro 6":   "store/play macro 6",
 		"macro 7":   "store/play macro 7",
+		"mute":      "Mute",
 		"numlock":   "Num Lock",
+		"paste":     "Paste",
+		"pause":     "Pause",
 		"pgdown":    "Page Down",
 		"pgup":      "Page Up",
+		"power":     "Power",
 		"prnt chds": "type chordmap",
+		"pscreen":   "Print Screen",
 		"rec macro": "start macro record",
 		"reset kbd": "keyboard reset",
 		"scrolllck": "Scroll Lock",
+		"stop":      "Stop",
 		"swap chds": "start chord swap",
+		"sysreq":    "SysReq",
+		"szsreq":    "SysReq",
 		"tab":       "Tab",
+		"voldown":   "Volume Down",
+		"volup":     "Volume Up",
 	}
 	mapLegend = []chordPad{
 		{
@@ -245,12 +309,12 @@ func (cm *chordMap) sectionHeader(h sectionHeader) bool {
 	remainder := (cm.xPads - cm.nPad%cm.xPads) % cm.xPads
 	cm.nPad += remainder
 	if remainder > 0 {
-		cm.yPageOffset += padSize+padSep
+		cm.yPageOffset += padSize + padSep
 	}
 	cm.canvas.Text(pageMargin, cm.y+cm.yPageOffset, h.header,
 		headerStyle+fmt.Sprintf(";font-size:%dpx", keySize))
 	return true
-}	
+}
 
 func (cm *chordMap) chordPad(cp chordPad) bool {
 	xPad := cm.nPad % cm.xPads
@@ -533,5 +597,3 @@ func flatChord(c chord) (fc [4]int, tc [3]int) {
 	}
 	return
 }
-
-
