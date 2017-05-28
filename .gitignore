@@ -15,8 +15,8 @@
 *~
 .dep
 \#*
+attic/
 cflow-*.out
-chordmap
 gh-pages/
 obj_*_lufa
 plot_files/
