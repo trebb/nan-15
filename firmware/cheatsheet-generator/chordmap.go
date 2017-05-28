@@ -21,6 +21,28 @@ var (
 	height      = flag.Int("h", 290, "height in mm")
 )
 
+const (
+	keySize        = 450
+	keySep         = 60
+	keyradius      = 60
+	padSize        = keySize*4 + keySep*3
+	pageMargin     = 1200
+	padSep         = 600
+	frameThickness = 120
+	frameSize      = padSize + frameThickness + 2*keySep
+	colorRed       = "darkred"
+	colorGreen     = "olivedrab"
+	colorGrey      = "dimgrey"
+	frameStyle     = "stroke:lightgray;fill:white"
+	pressStyle     = "stroke:gray;stroke-width:30;fill:gainsboro"
+	relStyle       = "stroke:lightgray;stroke-width:50;fill:white"
+	legendStyle    = "text-anchor:middle;font-family:'DejaVu Sans'"
+	headerStyle    = "text-anchor:left;font-family:'DejaVu Sans'" +
+		";dominant-baseline:bottom;fill:black"
+	padHeaderStyle = "font-family:'DejaVu Sans';font-size:400px;font-weight:bold" +
+		";dominant-baseline:bottom;fill:black"
+)
+
 var (
 	translatableNames = map[string]string{
 		"bspace": "⌫",
@@ -166,28 +188,6 @@ var (
 			headerStyle: padHeaderStyle + ";text-anchor:left",
 		},
 	}
-)
-
-const (
-	keySize        = 450
-	keySep         = 60
-	keyradius      = 60
-	padSize        = keySize*4 + keySep*3
-	pageMargin     = padSize / 2
-	padSep         = 600
-	frameThickness = 120
-	frameSize      = padSize + frameThickness + 2*keySep
-	colorRed       = "darkred"
-	colorGreen     = "olivedrab"
-	colorGrey      = "dimgrey"
-	frameStyle     = "stroke:lightgray;fill:white"
-	pressStyle     = "stroke:gray;stroke-width:30;fill:gainsboro"
-	relStyle       = "stroke:lightgray;stroke-width:50;fill:white"
-	legendStyle    = "text-anchor:middle;font-family:'DejaVu Sans'"
-	headerStyle    = "text-anchor:left;font-family:'DejaVu Sans'" +
-		";dominant-baseline:bottom;fill:black"
-	padHeaderStyle = "font-family:'DejaVu Sans';font-size:400px;font-weight:bold" +
-		";dominant-baseline:bottom;fill:black"
 )
 
 const (
@@ -535,7 +535,12 @@ func main() {
 	for _, cp := range chordPads {
 		if cp.legend == "no" {
 			cp.legend = "[empty]"
-			cm.put(cp)
+			fc, tc := flatChord(cp.chord)
+			zerofc := [...]int{0, 0, 0, 0}
+			zerotc := [...]int{0, 0, 0}
+			if !(fc == zerofc && tc == zerotc) {
+				cm.put(cp)
+			}
 		}
 	}
 	cm.put(sectionHeader{header: "Customization"})
