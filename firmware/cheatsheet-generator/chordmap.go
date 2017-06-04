@@ -41,6 +41,9 @@ const (
 		";dominant-baseline:bottom;fill:black"
 	padHeaderStyle = "font-family:'DejaVu Sans';font-size:400px;font-weight:bold" +
 		";dominant-baseline:bottom;fill:black"
+	qStyle = "font-family:'DejaVu Sans';font-size:400px" +
+		";dominant-baseline:middle;text-anchor:middle;fill:black"
+	intMax = int(^uint(0) >> 1)
 )
 
 var (
@@ -158,32 +161,39 @@ var (
 	}
 	mapLegend = []chordPad{
 		{
-			section: finger,
-			legend:  "red 1",
+			section:   finger,
+			legend:    "red 1",
+			suppressQ: true,
 		}, {
 			section:     finger,
 			legend:      "red 2",
+			suppressQ:   true,
 			header:      "swappable",
 			headerStyle: padHeaderStyle + ";text-anchor:middle",
 		}, {
-			section: fn,
-			legend:  "green 1",
+			section:   fn,
+			legend:    "green 1",
+			suppressQ: true,
 		}, {
 			section:     fn,
 			legend:      "green 2",
+			suppressQ:   true,
 			header:      "swappable",
 			headerStyle: padHeaderStyle + ";text-anchor:middle",
 		}, {
-			section: finger,
-			legend:  "red 1",
+			section:   finger,
+			legend:    "red 1",
+			suppressQ: true,
 		}, {
 			section:     fn,
 			legend:      "green 2",
+			suppressQ:   true,
 			header:      "unswappable",
 			headerStyle: padHeaderStyle + ";text-anchor:middle",
 		}, {
 			section:     thumb,
 			legend:      "grey",
+			suppressQ:   true,
 			header:      "immutable",
 			headerStyle: padHeaderStyle + ";text-anchor:left",
 		},
@@ -208,6 +218,7 @@ type (
 		modifierDuration string
 		header           string
 		headerStyle      string
+		suppressQ        bool
 	}
 	sectionHeader struct{ header string }
 	newPage       struct{}
@@ -221,6 +232,11 @@ type (
 		chordPads            chan interface{}
 		done                 chan struct{}
 		yPageOffset          int
+	}
+	step struct {
+		step    int
+		colSpan int
+		valid   bool
 	}
 )
 
@@ -237,7 +253,7 @@ func (cm *chordMap) newSVG() {
 	cm.yPageOffset = pageMargin
 	cm.canvas = svg.New(cm.outFile)
 	cm.canvas.StartviewUnit(cm.width, cm.height, "mm", 0, 0, cm.width*100, cm.height*100)
-	cm.canvas.Title(fmt.Sprintf("NaN-15 chordmap (p. %d)", cm.nPage))
+	cm.canvas.Title(fmt.Sprintf("NaN-15 chordmap (p. %d)", cm.nPage+1))
 }
 
 func (cm *chordMap) switchOutFile() {
@@ -336,7 +352,7 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 	case thumb:
 		legendColor = colorGrey
 	}
-	fc, tc := flatChord(cp.chord)
+	fc, tc := cp.chord.flat()
 	cm.canvas.Group(fmt.Sprintf("title=\"%d%d%d%d %d%d%d\"",
 		fc[0], fc[1], fc[2], fc[3], tc[0], tc[1], tc[2]))
 	cm.canvas.Roundrect(xFrame, yFrame, frameSize, frameSize, keyradius, keyradius,
@@ -357,6 +373,10 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 					keySize, keySize, keyradius, keyradius, keyState)
 			}
 		}
+	}
+	if !cp.suppressQ {
+		cm.canvas.Text(cm.x+padSize+keySep, cm.y+padSize+keySep,
+			fmt.Sprintf("%d", cp.chord.quality()), qStyle)
 	}
 	nMods := len(cp.modifiers)
 	if cp.legendIsChar {
@@ -535,7 +555,7 @@ func main() {
 	for _, cp := range chordPads {
 		if cp.legend == "no" {
 			cp.legend = "[empty]"
-			fc, tc := flatChord(cp.chord)
+			fc, tc := cp.chord.flat()
 			zerofc := [...]int{0, 0, 0, 0}
 			zerotc := [...]int{0, 0, 0}
 			if !(fc == zerofc && tc == zerotc) {
@@ -587,7 +607,7 @@ func (p byCategory) Less(i, j int) bool {
 }
 func (p byCategory) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 
-func flatChord(c chord) (fc [4]int, tc [3]int) {
+func (c chord) flat() (fc [4]int, tc [3]int) {
 	for row := 0; row < 3; row++ {
 		for col := 0; col < 4; col++ {
 			if c[row+1][col] {
@@ -601,4 +621,130 @@ func flatChord(c chord) (fc [4]int, tc [3]int) {
 		}
 	}
 	return
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func (c chord) quality() int {
+	var q int
+	min, max := c.stepBounds()
+	_, sumAbs := c.stepSums()
+	minRow, maxRow, nCols := c.rowBounds()
+	switch {
+	case max.step == 0: // single row
+		q = nCols
+		q += rowQuality(minRow)
+	case sumAbs == 1: // two adjacent rows, no zigzag
+		q = 6
+		q += nCols
+		q += rowQuality(minRow)
+	case maxRow-minRow <= 1 && abs(max.step) == 1: // two adjacent rows, zigzag
+		q = 8
+		q += nCols
+		q += rowQuality(minRow)
+	case sumAbs == 2 && abs(min.step) == 1 && abs(max.step) == 1: // straight diagonal
+		q = 15
+	case c.maxSlope() <= 1: // three rows, no steep steps
+		q = 14
+		q += nCols
+		if c.hasBottomCorners() {
+			q += 2
+		}
+	case c.maxSlope() > 1: // awkward row steps between adjacent columns
+		q = 16
+		q += nCols
+		if c.hasBottomCorners() {
+			q += 2
+		}
+	}
+	return q * 9 / 22
+}
+
+func rowQuality(row int) int {
+	switch row {
+	case 1:
+		return 1
+	case 3:
+		return 2
+	}
+	return 0
+}
+
+func (c chord) steps() (steps [3]step) {
+	fc, _ := c.flat()
+	for i := 1; i < len(fc); i++ {
+		if fc[i-1] != 0 {
+			for j := i; j < len(fc); j++ {
+				if fc[j] != 0 {
+					steps[i-1].step = fc[j] - fc[i-1]
+					steps[i-1].valid = true
+					steps[i-1].colSpan = j - (i - 1)
+					break
+				}
+			}
+		}
+	}
+	return
+}
+
+func (c chord) stepBounds() (min, max step) {
+	min.step = intMax
+	for _, s := range c.steps() {
+		if s.valid && abs(s.step) > abs(max.step) {
+			max = s
+		}
+		if s.valid && abs(s.step) < abs(min.step) {
+			min = s
+		}
+	}
+	return
+}
+
+func (c chord) stepSums() (sum, sumAbs int) {
+	for _, s := range c.steps() {
+		if s.valid {
+			sum += s.step
+			sumAbs += abs(s.step)
+		}
+	}
+	return
+}
+
+func (c chord) maxSlope() (maxSlope int) {
+	for _, s := range c.steps() {
+		if s.valid {
+			slope := abs(s.step) / s.colSpan
+			if slope > maxSlope {
+				maxSlope = slope
+			}
+		}
+	}
+	return
+}
+
+func (c chord) rowBounds() (min, max, nCols int) {
+	fc, _ := c.flat()
+	min = intMax
+	for _, col := range fc {
+		if col != 0 {
+			if col < min {
+				min = col
+			}
+			if col > max {
+				max = col
+			}
+			nCols++
+		}
+	}
+	return
+}
+
+func (c chord) hasBottomCorners() bool {
+	fc, _ := c.flat()
+	return fc[0] == 3 || fc[3] == 3
 }
