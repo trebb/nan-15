@@ -11,7 +11,7 @@ leds: leds.go
 	go build leds.go
 
 default-chordmap: chordmap Makefile
-	./chordmap -o default-chordmap.svg -w 460 -h 680
+	./chordmap -o default-chordmap.svg -w 490 -h 650
 
 leds.svg: leds ../nan-15_chord.c
 	./leds -o $@

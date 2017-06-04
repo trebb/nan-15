@@ -31,12 +31,12 @@ const (
 	frameThickness = 120
 	frameSize      = padSize + frameThickness + 2*keySep
 	colorRed       = "darkred"
-	colorGreen     = "olivedrab"
-	colorGrey      = "dimgrey"
-	frameStyle     = "stroke:lightgray;fill:white"
-	pressStyle     = "stroke:gray;stroke-width:30;fill:gainsboro"
-	relStyle       = "stroke:lightgray;stroke-width:50;fill:white"
-	legendStyle    = "text-anchor:middle;font-family:'DejaVu Sans'"
+	colorGreen     = "darkgreen"
+	colorGrey      = "darkslategrey"
+	frameStyle     = "fill:white;stroke-opacity:0.2"
+	pressStyle     = "stroke-width:30;fill-opacity:0.2;stroke-opacity:0.4"
+	relStyle       = "stroke-width:50;fill:white;stroke-opacity:0.2"
+	legendStyle    = "text-anchor:middle;font-family:'DejaVu Sans';fill:black"
 	headerStyle    = "text-anchor:left;font-family:'DejaVu Sans'" +
 		";dominant-baseline:bottom;fill:black"
 	padHeaderStyle = "font-family:'DejaVu Sans';font-size:400px;font-weight:bold" +
@@ -336,7 +336,7 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 	xPad := cm.nPad % cm.xPads
 	yPad := cm.nPad / cm.xPads
 
-	var keyState, legendColor string
+	var keyState, keypadColor string
 	cm.x = pageMargin + xPad*(padSize+padSep)
 	cm.y = pageMargin + yPad*(padSize+padSep) + cm.yPageOffset
 	if cm.y+padSize+pageMargin > cm.height*100 {
@@ -346,23 +346,24 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 	yFrame := cm.y - frameThickness/2 - keySep
 	switch cp.section {
 	case finger:
-		legendColor = colorRed
+		keypadColor = colorRed
 	case fn:
-		legendColor = colorGreen
+		keypadColor = colorGreen
 	case thumb:
-		legendColor = colorGrey
+		keypadColor = colorGrey
 	}
 	fc, tc := cp.chord.flat()
 	cm.canvas.Group(fmt.Sprintf("title=\"%d%d%d%d %d%d%d\"",
 		fc[0], fc[1], fc[2], fc[3], tc[0], tc[1], tc[2]))
 	cm.canvas.Roundrect(xFrame, yFrame, frameSize, frameSize, keyradius, keyradius,
-		frameStyle+fmt.Sprintf(";stroke-width:%d", frameThickness))
+		frameStyle+fmt.Sprintf(";stroke:%s;stroke-width:%d", keypadColor, frameThickness))
 	for row := 0; row < 4; row++ {
 		for col, keycol := 0, 0; keycol < 4; col, keycol = col+1, keycol+1 {
 			if cp.chord[row+1][col] {
-				keyState = pressStyle
+				keyState = pressStyle + fmt.Sprintf(";stroke:%s;fill:%s",
+					keypadColor, keypadColor)
 			} else {
-				keyState = relStyle
+				keyState = relStyle + fmt.Sprintf(";stroke:%s", keypadColor)
 			}
 			if row == 3 && col == 1 {
 				cm.canvas.Roundrect(cm.x+keycol*(keySize+keySep), cm.y+row*(keySize+keySep),
@@ -382,16 +383,16 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 	if cp.legendIsChar {
 		cm.canvas.Text(cm.x+padSize/2, cm.y+padSize*3/4, cp.legend,
 			legendStyle+fmt.Sprintf(";font-size:%dpx;font-weight:bold"+
-				";fill-opacity:0.1;fill:%s;stroke:%s;stroke-width:%dpx",
-				padSize-keySize, legendColor, legendColor, keySep/3))
+				";fill-opacity:0.1;stroke:black;stroke-width:%dpx",
+				padSize-keySize, keySep/2))
 	} else if nMods == 0 {
 		s := strings.SplitN(cp.legend, " ", 3)
 		nParts := len(s)
 		for i, part := range s {
 			yOffset := keySize / 2 * (2*i - nParts + 1)
 			cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, part,
-				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
-					keySize, legendColor))
+				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx",
+					keySize))
 		}
 	} else if cp.modifierDuration != "" {
 		var (
@@ -401,13 +402,13 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 		for i, mod = range cp.modifiers {
 			yOffset := keySize / 2 * (2*i - nMods)
 			cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, strings.Title(mod),
-				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
-					keySize, legendColor))
+				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx",
+					keySize))
 		}
 		yOffset := keySize / 2 * (2*(i+1) - nMods)
 		cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, cp.modifierDuration,
-			legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx;fill:%s",
-				keySize, legendColor))
+			legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx",
+				keySize))
 	}
 	if cp.header != "" {
 		cm.canvas.Text(cm.x-padSep/2, cm.y+padSize, cp.header, cp.headerStyle)
