@@ -34,15 +34,15 @@ const (
 	colorGreen     = "darkgreen"
 	colorGrey      = "darkslategrey"
 	frameStyle     = "fill:white;stroke-opacity:0.2"
-	pressStyle     = "stroke-width:30;fill-opacity:0.2;stroke-opacity:0.4"
 	relStyle       = "stroke-width:50;fill:white;stroke-opacity:0.2"
+	pressStyle     = "stroke-width:30;fill-opacity:0.2;stroke-opacity:0.4"
 	legendStyle    = "text-anchor:middle;font-family:'DejaVu Sans';fill:black"
-	headerStyle    = "text-anchor:left;font-family:'DejaVu Sans'" +
+	qStyle         = "font-family:'DejaVu Sans';font-size:400px" +
+		";dominant-baseline:middle;text-anchor:middle"
+	headerStyle = "text-anchor:left;font-family:'DejaVu Sans'" +
 		";dominant-baseline:bottom;fill:black"
 	padHeaderStyle = "font-family:'DejaVu Sans';font-size:400px;font-weight:bold" +
-		";dominant-baseline:bottom;fill:black"
-	qStyle = "font-family:'DejaVu Sans';font-size:400px" +
-		";dominant-baseline:middle;text-anchor:middle;fill:black"
+		";dominant-baseline:bottom"
 	intMax = int(^uint(0) >> 1)
 )
 
@@ -169,7 +169,7 @@ var (
 			legend:      "red 2",
 			suppressQ:   true,
 			header:      "swappable",
-			headerStyle: padHeaderStyle + ";text-anchor:middle",
+			headerStyle: padHeaderStyle + ";text-anchor:middle;fill:" + colorRed,
 		}, {
 			section:   fn,
 			legend:    "green 1",
@@ -179,7 +179,7 @@ var (
 			legend:      "green 2",
 			suppressQ:   true,
 			header:      "swappable",
-			headerStyle: padHeaderStyle + ";text-anchor:middle",
+			headerStyle: padHeaderStyle + ";text-anchor:middle;fill:" + colorGreen,
 		}, {
 			section:   finger,
 			legend:    "red 1",
@@ -194,7 +194,42 @@ var (
 			section:     thumb,
 			legend:      "grey",
 			suppressQ:   true,
-			header:      "immutable",
+			header:      "\u00A0immutable",
+			headerStyle: padHeaderStyle + ";text-anchor:left;fill:" + colorGrey,
+		}, {
+			section: finger,
+			chord: chord{
+				{},
+				{},
+				{false, true},
+			},
+			legend:      "excellent",
+			suppressQ:   false,
+			header:      "\u00A0\u00A0\u00A0ease",
+			headerStyle: padHeaderStyle + ";text-anchor:left",
+		}, {
+			section: finger,
+			chord: chord{
+				{},
+				{},
+				{true},
+				{false, true, true, true},
+			},
+			legend:      "fair",
+			suppressQ:   false,
+			header:      "\u00A0\u00A0\u00A0ease",
+			headerStyle: padHeaderStyle + ";text-anchor:left",
+		}, {
+			section: finger,
+			chord: chord{
+				{},
+				{false, false, true},
+				{true},
+				{false, true, false, true},
+			},
+			legend:      "poor",
+			suppressQ:   false,
+			header:      "\u00A0\u00A0\u00A0ease",
 			headerStyle: padHeaderStyle + ";text-anchor:left",
 		},
 	}
@@ -377,22 +412,25 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 	}
 	if !cp.suppressQ {
 		cm.canvas.Text(cm.x+padSize+keySep, cm.y+padSize+keySep,
-			fmt.Sprintf("%d", cp.chord.quality()), qStyle)
+			fmt.Sprintf("%d", cp.chord.quality()), qStyle+
+				fmt.Sprintf(";fill:%s", keypadColor))
 	}
 	nMods := len(cp.modifiers)
 	if cp.legendIsChar {
 		cm.canvas.Text(cm.x+padSize/2, cm.y+padSize*3/4, cp.legend,
-			legendStyle+fmt.Sprintf(";font-size:%dpx;font-weight:bold"+
-				";fill-opacity:0.1;stroke:black;stroke-width:%dpx",
-				padSize-keySize, keySep/2))
+			legendStyle+
+				fmt.Sprintf(";font-size:%dpx;font-weight:bold"+
+					";fill-opacity:0;stroke-opacity:0.5;stroke:black;stroke-width:%dpx",
+					padSize-keySize, keySep/2))
 	} else if nMods == 0 {
 		s := strings.SplitN(cp.legend, " ", 3)
 		nParts := len(s)
 		for i, part := range s {
 			yOffset := keySize / 2 * (2*i - nParts + 1)
 			cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, part,
-				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx",
-					keySize))
+				legendStyle+
+					fmt.Sprintf(";fill-opacity:0.5;dominant-baseline:middle;font-size:%dpx",
+						keySize))
 		}
 	} else if cp.modifierDuration != "" {
 		var (
@@ -402,12 +440,13 @@ func (cm *chordMap) chordPad(cp chordPad) bool {
 		for i, mod = range cp.modifiers {
 			yOffset := keySize / 2 * (2*i - nMods)
 			cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, strings.Title(mod),
-				legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx",
-					keySize))
+				legendStyle+
+					fmt.Sprintf(";fill-opacity:0.5;dominant-baseline:middle;font-size:%dpx",
+						keySize))
 		}
 		yOffset := keySize / 2 * (2*(i+1) - nMods)
 		cm.canvas.Text(cm.x+padSize/2, cm.y+padSize/2+yOffset, cp.modifierDuration,
-			legendStyle+fmt.Sprintf(";dominant-baseline:middle;font-size:%dpx",
+			legendStyle+fmt.Sprintf(";fill-opacity:0.5;dominant-baseline:middle;font-size:%dpx",
 				keySize))
 	}
 	if cp.header != "" {
