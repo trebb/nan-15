@@ -27,7 +27,7 @@
 * 0111 ----0x24 7 7         ----0x40   f7
 * 0112 ----0x93   lang4     ----0x8a   int4
 * 0113 ----0000   no        ----0000   no
-* 0120 ----0x0e k k         -s--0x0e K k
+* 0120 ----0x1b x x         -s--0x1b X x
 * 0121 ----0x58   kp enter  ----0000   no
 * 0122 g---0x2f ¨ lbracket  gs--0x33 ˝ scolon
 * 0123 ----0x5e   kp 6      ----0000   no
@@ -39,13 +39,13 @@
 * 0201 ----0x35 ^ grave     -s--0x35 ° grave
 * 0202 ----0x15 r r         -s--0x15 R r
 * 0203 ----0x34 ä quote     -s--0x34 Ä quote
-* 0210 ----0x1b x x         -s--0x1b X x
+* 0210 ----0x0e k k         -s--0x0e K k
 * 0211 gs--0x26 ± 9         gs--0x25 ™ 8
 * 0212 ----0x29   escape    ----0x7d   paste
 * 0213 ----0000   no        ----0000   no
 * 0220 ----0x16 s s         -s--0x16 S s
 * 0221 g---0x1f ² 2         gs--0x1f ⅛ 2
-* 0222 ----0x09 f f         -s--0x09 F f
+* 0222 ----0x0a g g         -s--0x0a G g
 * 0223 ----0x50   left      ----0x4f   right
 * 0230 g---0x07 ð d         gs--0x07 Ð d
 * 0231 ----0000   no        ----0000   no
@@ -72,7 +72,7 @@
 * 1002 ----0x44   f11       ----0x45   f12
 * 1003 ----0000   no        ----0000   no
 * 1010 ----0x13 p p         -s--0x13 P p
-* 1011 ----0x05 b b         -s--0x05 B b
+* 1011 ----0x07 d d         -s--0x07 D d
 * 1012 g---0x1b « x         g---0x1d » y
 * 1013 ----0000   no        ----0000   no
 * 1020 ----0x2d ß minus     ----0000   no
@@ -84,7 +84,7 @@
 * 1032 ----0000   no        ----0000   no
 * 1033 ----0000   no        ----0000   no
 * 1100 ----0x06 c c         -s--0x06 C c
-* 1101 ----0x07 d d         -s--0x07 D d
+* 1101 ----0x05 b b         -s--0x05 B b
 * 1102 ----0x55   kp aster  ----0000   no
 * 1103 ----0000   no        ----0000   no
 * 1110 ----0x1a w w         -s--0x1a W w
@@ -99,7 +99,7 @@
 * 1131 ----0000   no        ----0000   no
 * 1132 ----0000   no        ----0000   no
 * 1133 ----0000   no        ----0000   no
-* 1200 ----0x0d j j         -s--0x0d J j
+* 1200 ----0x19 v v         -s--0x19 V v
 * 1201 g---0x32 ` nus hash  gs--0x32 ` nus hash
 * 1202 ----0x65   appl      ----0000   no
 * 1203 ----0000   no        ----0000   no
@@ -147,7 +147,7 @@
 * 2031 ----0000   no        ----0000   no
 * 2032 ----0x91   lang2     ----0x88   int2
 * 2033 ----0x92   lang3     ----0x89   int3
-* 2100 ----0x19 v v         -s--0x19 V v
+* 2100 ----0x0d j j         -s--0x0d J j
 * 2101 ----0x94   lang5     ----0x8b   int5
 * 2102 ----0x95   lang6     ----0x8c   int6
 * 2103 ----0000   no        ----0000   no
@@ -171,7 +171,7 @@
 * 2211 ----0x60   kp 8      ----0x66   power
 * 2212 ----0x5a   kp 2      ----0000   no
 * 2213 ----0000   no        ----0000   no
-* 2220 ----0x0a g g         -s--0x0a G g
+* 2220 ----0x09 f f         -s--0x09 F f
 * 2221 ----0x54   kp slash  ----0000   no
 * 2222 ----0x0b h h         -s--0x0b H h
 * 2223 g---0x16 ſ s         gs--0x16 ẞ s
@@ -319,14 +319,14 @@
 * 1 0101 ---- -s-c t 0000 modifiers
 * 1 0110 ---- -sg- t 0000 modifiers
 * 1 0111 ---- -sgc t 0000 modifiers
-* 1 1000 ---- a--- t 0000 modifiers
-* 1 1001 ---- a--c t 0000 modifiers
-* 1 1010 ---- a-g- t 0000 modifiers
-* 1 1011 ---- a-gc t 0000 modifiers
-* 1 1100 ---- as-- t 0000 modifiers
-* 1 1101 ---- as-c t 0000 modifiers
-* 1 1110 ---- asg- t 0000 modifiers
-* 1 1111 ---- asgc t 0000 modifiers
+* 1 1000 a--- ---- t 0000 modifiers
+* 1 1001 a--c ---- t 0000 modifiers
+* 1 1010 a-g- ---- t 0000 modifiers
+* 1 1011 a-gc ---- t 0000 modifiers
+* 1 1100 as-- ---- t 0000 modifiers
+* 1 1101 as-c ---- t 0000 modifiers
+* 1 1110 asg- ---- t 0000 modifiers
+* 1 1111 asgc ---- t 0000 modifiers
 * 1 0002 ---- ---c 1 0000 modifiers
 * 1 0020 ---- --g- 1 0000 modifiers
 * 1 0022 ---- --gc 1 0000 modifiers
@@ -334,14 +334,14 @@
 * 1 0202 ---- -s-c 1 0000 modifiers
 * 1 0220 ---- -sg- 1 0000 modifiers
 * 1 0222 ---- -sgc 1 0000 modifiers
-* 1 2000 ---- a--- 1 0000 modifiers
-* 1 2002 ---- a--c 1 0000 modifiers
-* 1 2020 ---- a-g- 1 0000 modifiers
-* 1 2022 ---- a-gc 1 0000 modifiers
-* 1 2200 ---- as-- 1 0000 modifiers
-* 1 2202 ---- as-c 1 0000 modifiers
-* 1 2220 ---- asg- 1 0000 modifiers
-* 1 2222 ---- asgc 1 0000 modifiers
+* 1 2000 a--- ---- 1 0000 modifiers
+* 1 2002 a--c ---- 1 0000 modifiers
+* 1 2020 a-g- ---- 1 0000 modifiers
+* 1 2022 a-gc ---- 1 0000 modifiers
+* 1 2200 as-- ---- 1 0000 modifiers
+* 1 2202 as-c ---- 1 0000 modifiers
+* 1 2220 asg- ---- 1 0000 modifiers
+* 1 2222 asgc ---- 1 0000 modifiers
 * 1 0003 ---- ----   0000 change lr
 * 1 0030 ---- ----   0000 change lr
 * 1 0033 ---- ---- - 0000 no
