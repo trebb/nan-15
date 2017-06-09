@@ -56,10 +56,10 @@ var (
 		"up":     "△",
 	}
 	specialKeys = map[string]string{
+		"Left Shift": "Left Shift", // synthetic
 		"again":      "Again",
 		"appl":       "Appl",
 		"capslock":   "Caps Lock",
-		"change lr":  "change layer",
 		"copy":       "Copy",
 		"copz":       "Copy",
 		"cut":        "Cut",
@@ -131,7 +131,6 @@ var (
 		"lang7":      "Lang 7",
 		"lang8":      "Lang 8",
 		"lang9":      "Lang 9",
-		"Left Shift": "Left Shift", // synthetic
 		"macro 0":    "store/play macro 0",
 		"macro 1":    "store/play macro 1",
 		"macro 2":    "store/play macro 2",
@@ -140,8 +139,12 @@ var (
 		"macro 5":    "store/play macro 5",
 		"macro 6":    "store/play macro 6",
 		"macro 7":    "store/play macro 7",
+		"macro lr":   "macro layer",
+		"mouse lr":   "mouse layer",
 		"mute":       "Mute",
+		"nav lr":     "navigation layer",
 		"numlock":    "Num Lock",
+		"numpad lr":  "number pad layer",
 		"paste":      "Paste",
 		"pause":      "Pause",
 		"pgdown":     "Page Down",

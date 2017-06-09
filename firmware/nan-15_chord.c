@@ -71,14 +71,15 @@ typedef union {
 } keycoord_t;
 
 enum func_id {
-    RESET,
-    FNG_CHRD,
-    THB_CHRD,
-    CHG_LAYER,
+    /* keep those used in chrdfunc_name[] first */
     SWAP_CHRDS,
     MCR_RECORD,
-    MCR_PLAY,
     PRINT,
+    RESET,
+    CHG_LAYER,
+    MCR_PLAY,
+    FNG_CHRD,
+    THB_CHRD,
 };
 
 /* action_function() dispatches on AF()'s and PF()'s func_id */
@@ -816,11 +817,17 @@ static const char code_name[][CODE_NAME_LEN + 1] PROGMEM = {
 };
 
 static const char chrdfunc_name[][CODE_NAME_LEN + 1] PROGMEM = {
-    [CHG_LAYER]  = "change lr",
     [SWAP_CHRDS] = "swap chds",
     [MCR_RECORD] = "rec macro",
     [PRINT]      = "prnt chds",
     [RESET]      = "reset kbd",
+};
+
+static const char layer_name[][CODE_NAME_LEN + 1] PROGMEM = {
+    [L_NUM] = "numpad lr",
+    [L_NAV] = "nav lr",
+    [L_MSE] = "mouse lr",
+    [L_MCR] = "macro lr",
 };
 
     
@@ -1226,9 +1233,12 @@ fmt_fn_action(uint8_t chrd, char *linebuf, uint8_t *len)
     }
     case ACT_FUNCTION:
     {
-        uint8_t func_id = a.func.opt;
+        uint8_t func_id = a.func.opt, layer_id = a.func.id;
 
-        strcpy_P(name, (char *)(chrdfunc_name + func_id));
+        if (func_id == CHG_LAYER)
+            strcpy_P(name, (char *)(layer_name + layer_id));
+        else
+            strcpy_P(name, (char *)(chrdfunc_name + func_id));
         break;
     }
     default:             /* plain finger chord from fn_chrdmap */
