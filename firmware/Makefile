@@ -200,6 +200,13 @@ cflow-$(KEYMAP).out: *.c *.h Makefile
 		}' > $@
 	rm common protocol
 
+DEVICE_VER != awk \
+	'/\#define DEVICE_VER/{printf "%02x.%02x", ($$3 - $$3%256)/256, $$3%256}' \
+	config.h
+
+git-tag:
+	git tag $(DEVICE_VER)
+
 clean:
 	rm -rf cflow-$(KEYMAP).out
 	test ! -d common || rm common
