@@ -1754,12 +1754,12 @@ emit_chrd(uint8_t thb_chrd, uint8_t fng_chrd)
             switch (fn_act.key.code) {
             case MODS_ONESHOT:
                 set_weak_mods(m);
+                mods_tap_only = true;
                 break;
             case MODS_TAP_TOGGLE:
                 set_mods(get_mods() ^ m);
                 break;
             }
-            mods_tap_only = true;
             predicted_swap_state = IDLE;
             break;
         }
