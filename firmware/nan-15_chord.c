@@ -80,13 +80,23 @@ enum func_id {
     MCR_PLAY,
     FNG_CHRD,
     THB_CHRD,
+    LAYER_MOMENTARY,
 };
 
 /* action_function() dispatches on AF()'s and PF()'s func_id */
 #define AF(param, func_id) ACTION_FUNCTION_OPT((param), (func_id))
 #define PF(row, col, func_id) AF((row) | (col)<<3, (func_id))
 
-enum layer {L_DFLT = 0, L_NUM, L_NAV, L_MSE, L_MCR,};
+enum layer {
+    L_DFLT = 0,
+    /* keep those used in layer_name[] immdiately below L_DFLT */
+    L_NUM,
+    L_NAV,
+    L_MSE,
+    L_MCR,
+    /* sublayers, only accessible from non-chord layers */
+    L_NUM_FN,
+};
 
 static const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
     [L_DFLT] = {                /* keychord keys */
@@ -96,10 +106,10 @@ static const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
         {PF(4, 2, THB_CHRD), AC_NO,              PF(4, 1, THB_CHRD), PF(4, 0, THB_CHRD),},
     },
     [L_NUM] = {                 /* numpad */
-        {AC_P7,                 AC_P8, AC_P9, AC_BSPC,},
-        {AC_P4,                 AC_P5, AC_P6, AC_PDOT,},
-        {AC_P1,                 AC_P2, AC_P3, AC_SPC, },
-        {AF(L_DFLT, CHG_LAYER), AC_NO, AC_P0, AC_ENT, },
+        {AC_7,                  AC_8,  AC_9, AC_PMNS,                     },
+        {AC_4,                  AC_5,  AC_6, AC_PDOT,                     },
+        {AC_1,                  AC_2,  AC_3, AC_PENT,                     },
+        {AF(L_DFLT, CHG_LAYER), AC_NO, AC_0, AF(L_NUM_FN, LAYER_MOMENTARY)},
     },
     [L_NAV] = {                 /* nav */
         {AC_HOME,               AC_UP,   AC_PGUP,   AC_BSPC,},
@@ -109,8 +119,8 @@ static const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
     },
     [L_MSE] = {                 /* mouse */
         {AC_MS_WH_LEFT,         AC_MS_UP,   AC_MS_WH_RIGHT, AC_MS_WH_UP,  },
-        {AC_MS_LEFT,            AC_MS_BTN1, AC_MS_RIGHT,    AC_MS_WH_DOWN,},
-        {AC_MS_BTN2,            AC_MS_DOWN, AC_MS_BTN3,     AC_MS_BTN4,   },
+        {AC_MS_LEFT,            AC_LSFT,    AC_MS_RIGHT,    AC_LCTL,      },
+        {AC_MS_BTN3,            AC_MS_DOWN, AC_MS_BTN2,     AC_MS_WH_DOWN,},
         {AF(L_DFLT, CHG_LAYER), AC_NO,      AC_MS_BTN1,     AC_MS_BTN5,   },
     },
     [L_MCR] = {                 /* macro pad */
@@ -118,6 +128,12 @@ static const action_t actionmaps[][MATRIX_ROWS][MATRIX_COLS] PROGMEM = {
         {AF(KC_FN4, MCR_PLAY),  AF(KC_FN5, MCR_PLAY), AF(KC_FN6, MCR_PLAY), AF(KC_FN7, MCR_PLAY),},
         {AF(L_NUM, CHG_LAYER),  AF(L_NAV, CHG_LAYER), AF(L_MSE, CHG_LAYER), AC_SPC,              },
         {AF(L_DFLT, CHG_LAYER), AC_NO,                AC_ESCAPE,            AC_ENT,              },
+    },
+    [L_NUM_FN] = {                 /* numpad sublayer */
+        {AC_TRNS, AC_PSLS, AC_PAST, AC_PPLS,},
+        {AC_TRNS, AC_TRNS, AC_TRNS, AC_SPC, },
+        {AC_TRNS, AC_TRNS, AC_TRNS, AC_BSPC,},
+        {AC_TRNS, AC_NO,   AC_P0,   AC_TRNS,},
     },
 };
 
@@ -1871,33 +1887,47 @@ action_function(keyrecord_t *record, uint8_t id, uint8_t opt)
             case MCR_PLAY:      /* non-chord macro pad key */
                 mcr(EXEC, id);
                 break;
+            case LAYER_MOMENTARY: /* non-chord sublayer */
+            {
+                uint8_t layer = id;
+
+                layer_on(layer);
+                keys_down = 0;
+            }
             }
         }
     } else {
-        if (ready) {
-            if (func_id == MCR_PLAY) {
-                /* ignored on key release */
-            } else if (func_id == CHG_LAYER) {
-                /* leave or keep out of chord mode */
-                layer = id;
-                layer_pending = true;
-            } else if ((layer = emit_chrd(thb_chrd, fng_chrd))) {
-                /* any layer but L_DFLT */
-                layer_pending = true;
-            }
-            ready = false;
-        }
-        if (--keys_down <= 0) {
-            /* keys_down < 0 if there are pressed keys while leaving
-               non_chord mode */
+        if (func_id == LAYER_MOMENTARY) { /* non-chord sublayer */
+            uint8_t layer = id;
+
+            layer_off(layer);
             keys_down = 0;
-            ready = true;
-            fng_chrd = 0;
-            thb_chrd = 0;
-            if (layer_pending) {         /* leave chord mode */
-                blink(CHG_LAYER_ON);
-                layer_move(layer);
-                layer_pending = false;
+        } else {
+            if (ready) {
+                if (func_id == MCR_PLAY) {
+                    /* ignored on key release */
+                } else if (func_id == CHG_LAYER) {
+                    /* leave or keep out of chord mode */
+                    layer = id;
+                    layer_pending = true;
+                } else if ((layer = emit_chrd(thb_chrd, fng_chrd))) {
+                    /* any layer but L_DFLT */
+                    layer_pending = true;
+                }
+                ready = false;
+            }
+            if (--keys_down <= 0) {
+                /* keys_down < 0 if there are pressed keys while leaving
+                   non-chord mode */
+                keys_down = 0;
+                ready = true;
+                fng_chrd = 0;
+                thb_chrd = 0;
+                if (layer_pending) {         /* leave chord mode */
+                    blink(CHG_LAYER_ON);
+                    layer_move(layer);
+                    layer_pending = false;
+                }
             }
         }
     }
