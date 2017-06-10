@@ -3,7 +3,7 @@
 gh-pages:
 	rm -rf gh-pages
 	mkdir gh-pages
-	cp hardware/bottom-label-de.svg gh-pages/
+	cp hardware/bottom-label.svg gh-pages/
 	(cd hardware; $(MAKE) frame.stl)
 	cp hardware/frame.stl gh-pages/
 	cp hardware/top-plate/plot_files/top-plate.zip gh-pages/
