@@ -71,7 +71,7 @@ Self-Documentation
 The keyboard is able to __print__ its current chordmap tables by
 "typing" them to the host computer.  Depending on the host computer's
 keymap, the output of this operation may appear a bit mangled
-([Example, affected by QUERTZ layout
+([Example, affected by QWERTZ layout
 setting](https://trebb.github.io/nan-15/chordmap.txt)).
 
 See ./firmware/cheatsheet-generator/ for a tool that converts the
