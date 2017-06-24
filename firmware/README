@@ -5,10 +5,11 @@ $ make KEYMAP=test all
 $ make KEYMAP=chord all
 
 
-Upload bootloader and set fuses (attach USBasp programmer):
+The factory-installed ATMEL bootloader works well in cases like the
+test firmware where no EEPROM is involved.  For the chord firmware you
+need to upload the LUFA bootloader (attach USBasp programmer):
 
 $ make bootloader-dfu
-$ make fuses
 
 
 Upload firmware to keyboard (press reset button):

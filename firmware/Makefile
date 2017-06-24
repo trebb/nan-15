@@ -130,7 +130,7 @@ bootloader-mass-storage: bootloaders
 bootloaders-clean:
 	$(MAKE) -C tmk_keyboard/tmk_core/protocol/lufa/LUFA-git/Bootloaders clean
 
-fuses:
+fuses:				#not necessary; factory defaults are fine
 	avrdude -c usbasp -pm32u2 -U lfuse:w:0xff:m -U hfuse:w:0xd9:m -U efuse:w:0xf4:m 
 
 # Build Options
