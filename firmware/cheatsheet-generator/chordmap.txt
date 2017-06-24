@@ -46,7 +46,7 @@
 * 0220 ----0x16 s s         -s--0x16 S s
 * 0221 g---0x1f ² 2         gs--0x1f ⅛ 2
 * 0222 ----0x0a g g         -s--0x0a G g
-* 0223 ----0x50   left      ----0x4f   right
+* 0223 ----0x4f   right     ----0x50   left
 * 0230 g---0x07 ð d         gs--0x07 Ð d
 * 0231 ----0000   no        ----0000   no
 * 0232 ----0x31 # bslash    -s--0x31 ' bslash
