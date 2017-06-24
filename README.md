@@ -95,3 +95,5 @@ It uses Cherry MX-style switches and an ATmega32U2-MU MCU.  There are
 12 LEDs signalling keyboard state and errors.
 
 ![Parts](http://i.imgur.com/Hco3Ytr.jpg)
+
+The finished product draws about 18 mA.
