@@ -97,3 +97,5 @@ It uses Cherry MX-style switches and an ATmega32U2-MU MCU.  There are
 ![Parts](http://i.imgur.com/Hco3Ytr.jpg)
 
 The finished product draws about 18 mA.
+
+![Finished products](http://i.imgur.com/Ti3f0bC.jpg)
