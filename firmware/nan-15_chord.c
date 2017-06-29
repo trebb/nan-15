@@ -1090,7 +1090,7 @@ blink_mods(void)
     if (wm & gui)
         blink(ONESHOT_GUI_ON);
     if (m & ctl)
-        blink(TOGGLED_GUI_ON);
+        blink(TOGGLED_CTL_ON);
     else
         blink(OFF(CTL));
     if (wm & ctl)
